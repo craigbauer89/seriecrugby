@@ -26,35 +26,35 @@ import lombok.AllArgsConstructor;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/partite")
+@RequestMapping("/")
 @CrossOrigin
 public class PartiteController {
 
 	private PartiteService  partiteService;
 	
-	@GetMapping
+	@GetMapping("partite")
 	public ResponseEntity<List<Partite>> getAll() {
 		return ResponseEntity.ok(partiteService.getAll());
 	}
 	
-	@PostMapping
+	@PostMapping("partite")
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<Partite> insert(@RequestBody PartiteDto dto) {
 		return ResponseEntity.ok(partiteService.insert(dto));
 	}
 
-	@GetMapping("/{id}")
+	@GetMapping("partite/{id}")
 	public ResponseEntity<Optional<Partite>> getById(@PathVariable Long id) {
 		return ResponseEntity.ok(partiteService.getById(id));
 	}
 	
-	@PutMapping("/{id}")
+	@PutMapping("partite/{id}")
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<Partite> update(@PathVariable Long id,@RequestBody PartiteDto dto) {
 		return ResponseEntity.ok(partiteService.update(id, dto));
 	}
 	
-	@DeleteMapping("/{id}")
+	@DeleteMapping("partite/{id}")
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<String> delete(@PathVariable Long id) {
 		partiteService.cancella(id);
