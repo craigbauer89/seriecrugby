@@ -31,10 +31,14 @@ public class SquadreService {
 	
 	private ObjectProvider<SquadreDto> squadreDtoProvider;
 
+
 	public List<Squadre> getAll() {
-		return squadreRepository.findAll();
+		return squadreRepository.getAllOrdered();
 	}
-	
+
+	public List<Squadre> getAllAlpha() {
+		return squadreRepository.getAllOrderedAlpha();
+	}
 	public Optional<Squadre> getById(Long id) {
 		Optional<Squadre>  cliente = squadreRepository.findById(id);
 		if (cliente.isPresent()) return cliente;

@@ -37,7 +37,11 @@ public class SquadreController {
 	public ResponseEntity<List<Squadre>> getAll() {
 		return ResponseEntity.ok(squadreService.getAll());
 	}
-	
+
+	@GetMapping("/sorted")
+	public ResponseEntity<List<Squadre>> getAllAlpha() {
+		return ResponseEntity.ok(squadreService.getAllAlpha());
+	}
 	@PostMapping
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<Squadre> insert(@RequestBody SquadreDto dto) {
