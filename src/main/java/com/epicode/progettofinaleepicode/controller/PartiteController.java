@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.epicode.progettofinaleepicode.entity.Championship;
 import com.epicode.progettofinaleepicode.entity.Partite;
 import com.epicode.progettofinaleepicode.entity.PartiteDto;
 
@@ -37,8 +38,20 @@ public class PartiteController {
 		return ResponseEntity.ok(partiteService.getAll());
 	}
 	
+	@GetMapping("partite/by-year/{year}")
+	@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+	public ResponseEntity<List<Partite>> getAllByYear(@PathVariable Integer year) {
+		return ResponseEntity.ok(partiteService.getAllByYear(year));
+	}
+	
+	@GetMapping("partite/by-squadra/{squadra_id}")
+	@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+	public ResponseEntity<List<Partite>> getAllBySquadra(@PathVariable Long squadra_id) {
+		return ResponseEntity.ok(partiteService.getAllBySquadra( squadra_id));
+	}
+	
 	@PostMapping("partite")
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	public ResponseEntity<Partite> insert(@RequestBody PartiteDto dto) {
 		return ResponseEntity.ok(partiteService.insert(dto));
 	}
@@ -49,13 +62,13 @@ public class PartiteController {
 	}
 	
 	@PutMapping("partite/{id}")
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	public ResponseEntity<Partite> update(@PathVariable Long id,@RequestBody PartiteDto dto) {
 		return ResponseEntity.ok(partiteService.update(id, dto));
 	}
 	
 	@DeleteMapping("partite/{id}")
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	public ResponseEntity<String> delete(@PathVariable Long id) {
 		partiteService.cancella(id);
 		return ResponseEntity.ok("Partite cancellato");

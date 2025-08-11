@@ -1,18 +1,15 @@
 package com.epicode.progettofinaleepicode.entity;
 
-
-
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -21,27 +18,25 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-
-
 @Entity
 @Data
-@ToString(exclude = {"squadre"})
+@ToString(exclude = {"season", "classifica"})
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties({"hibernateLazyInitializer","handler", "squadre"})
-public class Jersey {
-	
+@JsonIgnoreProperties({"hibernateLazyInitializer","handler", "classifica"})
+public class Championship {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	private String color;
+	private String name;
 	
-	@OneToMany(mappedBy = "jersey", fetch = FetchType.EAGER)
-    private List<Squadre> squadre; 
-	
+	@ManyToOne
+	@JoinColumn(name = "season_id")
+	private Season season;
 
-	
+	@OneToMany(mappedBy = "championship" , cascade = CascadeType.ALL)
+	private List<Classifica> classifica;
 
 }

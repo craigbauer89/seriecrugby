@@ -2,13 +2,13 @@ package com.epicode.progettofinaleepicode.entity;
 
 import java.time.LocalDate;
 
-import javax.persistence.CascadeType;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToOne;
-
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,17 +26,54 @@ public class Partite {
 	
 	private LocalDate date;
 	
-	@OneToOne //(cascade = CascadeType.ALL)
-	private Squadre squadra1;
+	@ManyToOne
+    @JoinColumn(name = "squadraHome_id", nullable = false)
+    private Squadre squadra1;  // First team in the game
+
+    @ManyToOne
+    @JoinColumn(name = "squadraAway_id", nullable = false)
+    private Squadre squadra2;  
 	
-	@OneToOne //(cascade = CascadeType.ALL)
-	private Squadre squadra2;
-	
+	private Long squadra1_id;
+	private Long squadra2_id;
 	private int puntisquadra1 =0;
 	private int puntisquadra2  =0;
 	private int meteSquadra1 =0;
 	private int meteSquadra2 =0;
-	private int girone;
+	private Long classifica_id;
+	//home_win??????
+	
+	@ManyToOne
+	@JoinColumn(name = "mainClassifica_id")
+	private Classifica classifica;
+	
+	public Long getSquadra1_id() {
+	    return squadra1 != null ? squadra1.getId() : null;
+	}
+
+	public void setSquadra1(Squadre squadra1) {
+	    this.squadra1 = squadra1;
+	    this.squadra1_id = squadra1 != null ? squadra1.getId() : null;
+	}
+
+	public Long getSquadra2_id() {
+	    return squadra2 != null ? squadra2.getId() : null;
+	}
+
+	public void setSquadra2(Squadre squadra2) {
+	    this.squadra2 = squadra2;
+	    this.squadra2_id = squadra2 != null ? squadra2.getId() : null;
+	}
+	
+	public Long getClassifica_id() {
+	    return classifica != null ? classifica.getId() : this.classifica_id;
+	}
+
+	public void setClassifica(Classifica classifica) {
+	    this.classifica = classifica;
+	    this.classifica_id = classifica != null ? classifica.getId() : null;
+	}
+	
 	
 
 }

@@ -1,7 +1,5 @@
 package com.epicode.progettofinaleepicode.entity;
 
-
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -14,15 +12,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PartiteDto {
+public class ClassificaDto {
 	
-	private LocalDate date;
-	private Long squadra1_id;
-	private Long squadra2_id;
-	private int puntisquadra1;
-	private int puntisquadra2;
-	private int meteSquadra1;
-	private int meteSquadra2;
-	private Long classifica_id;
+	private String name;
+	
+	
 
 }

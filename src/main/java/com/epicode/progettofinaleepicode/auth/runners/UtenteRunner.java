@@ -26,14 +26,22 @@ import com.epicode.progettofinaleepicode.auth.entity.Role;
 import com.epicode.progettofinaleepicode.auth.entity.Utente;
 import com.epicode.progettofinaleepicode.auth.repository.RoleRepository;
 import com.epicode.progettofinaleepicode.auth.repository.UserRepository;
+import com.epicode.progettofinaleepicode.entity.Championship;
+import com.epicode.progettofinaleepicode.entity.Classifica;
 import com.epicode.progettofinaleepicode.entity.Jersey;
 import com.epicode.progettofinaleepicode.entity.Partite;
+import com.epicode.progettofinaleepicode.entity.Season;
 import com.epicode.progettofinaleepicode.entity.Squadre;
 import com.epicode.progettofinaleepicode.repository.JerseyRepository;
 import com.epicode.progettofinaleepicode.repository.PartiteRepository;
 import com.epicode.progettofinaleepicode.repository.SquadreRepository;
+import com.epicode.progettofinaleepicode.service.SquadreService;
+import com.epicode.progettofinaleepicode.repository.ChampionshipRepository;
+import com.epicode.progettofinaleepicode.repository.SeasonRepository;
+import com.epicode.progettofinaleepicode.repository.ClassificaRepository;
 
 import lombok.AllArgsConstructor;
+import net.bytebuddy.dynamic.DynamicType.Builder.FieldDefinition.Optional;
 
 
 @AllArgsConstructor
@@ -42,11 +50,15 @@ public class UtenteRunner implements ApplicationRunner {
 
 
 	JerseyRepository jerseyRepository;
+	SeasonRepository seasonRepository;
+	ChampionshipRepository championshipRepository;
+	ClassificaRepository classificaRepository;
 	SquadreRepository squadraRepository;
 	PartiteRepository partiteRepository;
 	RoleRepository roleRepository;
 	UserRepository userRepository;
 	PasswordEncoder encoder;
+	SquadreService squadraService;
 	
 
 	@Override
@@ -66,9 +78,6 @@ public class UtenteRunner implements ApplicationRunner {
 		userAdmin.setUsername("craigbauer89");
 
 		userAdmin.setPassword(encoder.encode("qwerty"));
-//		userAdmin.setNome("Timmy");
-//		userAdmin.setEmail("timmyv@gmail.com");
-//		userAdmin.setCognome("Verde");
 		userAdmin.setRoles(ruoliAdministrator);
 		userRepository.save(userAdmin);
 		
@@ -77,19 +86,10 @@ public class UtenteRunner implements ApplicationRunner {
 		
 		Utente simpleUser = new Utente();
 		simpleUser.setUsername("user1");
-//		simpleUser.setNome("gianluigi");
-//		simpleUser.setEmail("gianluigi@gmail.com");
-//		simpleUser.setCognome("Marrone");
 		simpleUser.setPassword( encoder.encode("qwerty"));
-
 		simpleUser.setRoles(ruoliUtente);
 		userRepository.save(simpleUser);
 		
-		
-//		Utente simpleUser2 = new Utente();
-//		simpleUser2.setUsername("user1");
-//		simpleUser2.setPassword( encoder.encode("qwerty"));
-//		userRepository.save(simpleUser2);
 		
 		String[] colors = {"red", "white", "purple", "wine","bluedarkblue", "black", "blueyellow", "redorange", "blackgreen",
 				"redblue", "redwhite", "whiteblue", "yellowgreen","whitedarkblue", "greenblue", "redblackyellow", "greenyellowblack","blueredwhite" , "blackgreen" , "blackyellowwhite" ,"blackwhite", "extracolor"};
@@ -102,28 +102,192 @@ public class UtenteRunner implements ApplicationRunner {
 		jerseyRepository.save(jersey);
 		
 		
-		
 		}
 		
 		List<Squadre> squadre = readSquadreFromCSV("squadre3.csv"); 
+
 		
-		for (Squadre s : squadre) { 
-			System.out.println(s);
-			squadraRepository.save(s);
+		String[] seasonslist = {"2021","2020","2023","2025","2019","2018","2022","2024" };
+		String[] classificalist = {"Group A","Group D","Group C","Group B","Group F","Group E" };
+		String[] champsionshiplist = {"Serie A","Serie D","Serie E","Serie F","Serie C","Serie B" };
+		
+		List<Season> seasons = new ArrayList<Season>();
+		for (String item : seasonslist) {
+			Season season = new Season();
+			season.setYear(item);
+			seasons.add(season);
+			
+		
+			List<Championship> championships = new ArrayList<Championship>();
+			for (String item1 : champsionshiplist) {
+				Championship championship = new Championship();	
+				championship.setName(item1);	
+				championship.setSeason(season);
+				
+				List<Classifica> classifice = new ArrayList<Classifica>();
+				for (String item2 : classificalist) {
+					Classifica classifica = new Classifica();
+					classifica.setName(item2);
+					classifica.setChampionship(championship);
+					if (item.equals("2022") && item1.equals("Serie C") ) {
+						List<Squadre> classificaSquadre = new ArrayList<Squadre>();
+						for (Squadre squadra : squadre) {
+							
+								switch (squadra.getGirone()) {
+							    case 1:
+							    	 if (item2.equals("Group A")) {
+							    		 classificaSquadre.add(squadra);
+							    		 if (squadra.getClassifica() == null) {
+							    			    squadra.setClassifica(new ArrayList<>());
+							    			}
+							    			squadra.getClassifica().add(classifica);
+					                    }
+							        break;
+							    case 2:
+							    	 if (item2.equals("Group B")) {
+							    		 classificaSquadre.add(squadra);
+							    		 if (squadra.getClassifica() == null) {
+							    			    squadra.setClassifica(new ArrayList<>());
+							    			}
+							    			squadra.getClassifica().add(classifica);
+					               
+					                    }
+							        break;
+							    case 3:
+							    	 if (item2.equals("Group C")) {
+							    		 classificaSquadre.add(squadra);
+							    		 if (squadra.getClassifica() == null) {
+							    			    squadra.setClassifica(new ArrayList<>());
+							    			}
+							    			squadra.getClassifica().add(classifica);
+					                    }
+							        break;
+							    case 4:
+							    	 if (item2.equals("Group D")) {
+							    		 classificaSquadre.add(squadra);
+							    		 if (squadra.getClassifica() == null) {
+							    			    squadra.setClassifica(new ArrayList<>());
+							    			}
+							    			squadra.getClassifica().add(classifica);
+					                    }
+							        break;
+							    case 5:
+							    	 if (item2.equals("Group E")) {
+							    		 classificaSquadre.add(squadra);
+							    		 if (squadra.getClassifica() == null) {
+							    			    squadra.setClassifica(new ArrayList<>());
+							    			}
+							    			squadra.getClassifica().add(classifica);
+					                    }
+							        break;
+							    case 6:
+							    	 if (item2.equals("Group F")) {
+							    		 classificaSquadre.add(squadra);
+							    		 if (squadra.getClassifica() == null) {
+							    			    squadra.setClassifica(new ArrayList<>());
+							    			}
+							    			squadra.getClassifica().add(classifica);
+					                    }
+							        break;
+							    default:
+							        System.out.println("Altro numero");
+							        break;
+								}
+								
+								squadraRepository.save(squadra);
+								
+						}
+						classifica.setSquadre(classificaSquadre);
+						List<Partite> partite = readPartiteFromCSV("partite.csv",squadre); 
+						List<Partite> classificaPartite = new ArrayList<Partite>();
+						for (Partite p : partite) { 
+							System.out.println(p);
+							//ISSUE this will always be null based on how we set up the class
+							Long girone = p.getClassifica_id();
+							
+								switch (girone.intValue()) {
+							    case 1:
+							    	 if (item2.equals("Group A")) {
+							    		 classificaPartite.add(p);
+							    		 p.setClassifica(classifica);
+					                    }
+							        break;
+							    case 2:
+							    	 if (item2.equals("Group B")) {
+							    		 classificaPartite.add(p);
+							    		 p.setClassifica(classifica);
+					                    }
+							        break;
+							    case 3:
+							    	 if (item2.equals("Group C")) {
+							    		 classificaPartite.add(p);
+							    		 p.setClassifica(classifica);
+					                    }
+							        break;
+							    case 4:
+							    	 if (item2.equals("Group D")) {
+							    		 classificaPartite.add(p);
+							    		 p.setClassifica(classifica);
+					                    }
+							        break;
+							    case 5:
+							    	 if (item2.equals("Group E")) {
+							    		 classificaPartite.add(p);
+							    		 p.setClassifica(classifica);
+					                    }
+							        break;
+							    case 6:
+							    	 if (item2.equals("Group F")) {
+							    		 classificaPartite.add(p);
+							    		 p.setClassifica(classifica);
+					                    }
+							        break;
+							    default:
+							        System.out.println("Altro numero");
+							        break;
+								}
+								
+							//	partiteRepository.save(p);
+								
+						}
+						classifica.setPartite(classificaPartite);
+					}
+					classifice.add(classifica);
+				}
+				championship.setClassifica(classifice);
+				championships.add(championship);
+		//		championshipRepository.save(championship);
 			}
+			season.setLeague(championships);
+			seasonRepository.save(season);
+		}
+	//	for (Season item : seasons) {
+	//		item.setLeague(championships);
+	//	}
 		
-		List<Partite> partite = readPartiteFromCSV("partite.csv"); 
+//		List<Partite> partite = readPartiteFromCSV("partite.csv",squadre); 
+//		for (Partite p : partite) { 
+//			System.out.println(p);
+//			partiteRepository.save(p);
+//			}	
 		
-		for (Partite p : partite) { 
-			System.out.println(p);
-			partiteRepository.save(p);
-			}
+		//TESTING//
+		
+		Long id = (long) 1;
+		java.util.Optional<Squadre> testSquadra = squadraService.getById(id);
+		List<Classifica> testClassifca = testSquadra.get().getClassifica();
+		System.out.println(testClassifca);
 		
 		
+		List<Partite> testHomePartite = testSquadra.get().getAwaygames();
+		List<Partite> testAwayPartite = testSquadra.get().getAwaygames();
+		
+		System.out.println("HOMEGAMES"+ testHomePartite);
+		System.out.println("AWAYGAMES"+ testAwayPartite);
 		
 	}
 			 
-	private static List<Partite> readPartiteFromCSV(String fileName) { 
+	private static List<Partite> readPartiteFromCSV(String fileName,List<Squadre> squadre ) { 
 		List<Partite> partite = new ArrayList<>();
 		Path pathToFile = Paths.get(fileName); 
 		
@@ -133,7 +297,7 @@ public class UtenteRunner implements ApplicationRunner {
 			
 			while (line != null) { 
 				String[] attributes = line.split(","); 
-				Partite partita = createPartita(attributes); 
+				Partite partita = createPartita(attributes,squadre); 
 				partite.add(partita); // read next line before looping // if end of file reached, line would be null 
 				line = br.readLine(); 
 				} 
@@ -178,7 +342,6 @@ public class UtenteRunner implements ApplicationRunner {
 			 String indirizzo  = metadata[5];
 			 String sito  =  metadata[6];
 			 String telefono   =  metadata[7];
-			 Jersey jersey  =  new Jersey(new Long(metadata[8]), colors[ new Integer(metadata[8])]);
 			 Integer puntiFatti = new Integer(metadata[15]); //done
 			 Integer meteFatti = new Integer(metadata[14]); //done
 			 Integer puntiSubiti = new Integer(metadata[16]); //done
@@ -191,13 +354,11 @@ public class UtenteRunner implements ApplicationRunner {
 			 Integer differenza = new Integer(metadata[17]); //done
 			 Integer girone = new Integer(metadata[19]); //done
 			 
-			 
-			 
-//			 65,9,26,2,2,0,0,2,8,39
+			 Jersey jersey  =  createJersey(new Long(metadata[8]), colors[ new Integer(metadata[8])] );
 			 
 				
 			Squadre squadre  = new Squadre();
-			squadre.setId(id);
+			//squadre.setId(id);
 			squadre.setLatitude(latitude);
 			squadre.setLongitude(longitude);
 			squadre.setNome(nome);
@@ -216,26 +377,35 @@ public class UtenteRunner implements ApplicationRunner {
 			squadre.setPuntiFatti(puntiFatti);
 			squadre.setPuntiSubiti(puntiSubiti);
 			squadre.setPunti(punti);
-			squadre.setGirone(girone);
-//			
-			
-			
-			
+			squadre.setGirone(girone);	
+		
 		return squadre;
 		
-//			
+		}
+		
+		private static Jersey createJersey(Long id, String colour) { 
+			
+			List<Squadre> squadre = new ArrayList<Squadre>();
+		
+			Jersey jersey = new Jersey();
+			
+			jersey.setColor(colour);
+			jersey.setId(id);
+			jersey.setSquadre(squadre);
+			
+		return jersey;
 			
 		}
 
 	
-private static Partite createPartita(String[] metadata) { 
+		private static Partite createPartita(String[] metadata,List<Squadre> squadre) { 
 			
-			List<Squadre> squadre = readSquadreFromCSV("squadre3.csv"); 
-			
-			Long id = new Long(metadata[0]);
+//			List<Squadre> squadre = readSquadreFromCSV("squadre3.csv"); 
+//			
+//			Long id = new Long(metadata[0]);
 			LocalDate date = LocalDate.parse(metadata[1]);
 			
-			Integer girone = new Integer(metadata[8]);
+			Long girone = new Long(metadata[8]);
 			Squadre squadra1 =new Squadre();
 			 for (Squadre s : squadre) { 
 					if (s.getId().equals(new Long(metadata[2]))) {
@@ -257,9 +427,8 @@ private static Partite createPartita(String[] metadata) {
 			 Integer mete2   = new Integer(metadata[6]);
 			 
 			
-				
 			Partite partite  = new Partite();
-			partite.setId(id);
+		//	partite.setId(id);
 			partite.setDate(date);
 			partite.setSquadra1((Squadre)squadra1);
 			partite.setPuntisquadra1(score1);
@@ -267,27 +436,17 @@ private static Partite createPartita(String[] metadata) {
 			partite.setSquadra2((Squadre)squadra2);
 			partite.setPuntisquadra2(score2);
 			partite.setMeteSquadra2(mete2);
-			partite.setGirone(girone);
-			
-//			
+			partite.setClassifica_id(girone);					
 		return partite;
+				
 		
-//			
+		
 			
 		}
-//		
-//		for (String color : colors) {
-//			  
-//			
-//			Jersey jersey  = new Jersey();
-//			jersey.setColor(color);
-//			jerseyRepository.save(jersey);
-//			
-//			
-		
-//			
-//			}
-		
+	
+
+
+
 	
 		
 		

@@ -47,11 +47,11 @@ public class LoginController {
 				request.getPassword()
 				
 		);
-		System.out.println(request.getUsername());
-		System.out.println(request.getPassword());
+		System.out.println(request.getUsername()+ "dinno");
+		System.out.println(request.getPassword()+ "rinno");
 		Authentication authentication = authManager.authenticate(usrNameAuth);
 		
-		System.out.println(authentication);
+		System.out.println(authentication+ "jinno");
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		String jwt = jwtUtils.generateJwtToken(authentication);
 		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();

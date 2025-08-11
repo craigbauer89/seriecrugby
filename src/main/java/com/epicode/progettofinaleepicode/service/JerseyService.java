@@ -10,10 +10,13 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 
+import com.epicode.progettofinaleepicode.entity.Championship;
 import com.epicode.progettofinaleepicode.entity.Jersey;
 import com.epicode.progettofinaleepicode.entity.JerseyDto;
 import com.epicode.progettofinaleepicode.entity.Partite;
 import com.epicode.progettofinaleepicode.entity.PartiteDto;
+import com.epicode.progettofinaleepicode.entity.Season;
+import com.epicode.progettofinaleepicode.entity.Squadre;
 import com.epicode.progettofinaleepicode.repository.JerseyRepository;
 import com.epicode.progettofinaleepicode.repository.PartiteRepository;
 
@@ -78,8 +81,16 @@ public class JerseyService {
 	}
 		
 		public void cancella(Long id) {
-			if (!jerseyRepository.existsById(id)) {
-				throw new EntityNotFoundException("Partite not trovato");
+			
+			Jersey jersey = jerseyRepository.findById(id).orElseThrow(() -> new RuntimeException("Jersey not found"));
+			
+			List <Squadre> squadre = jersey.getSquadre();
+			
+			
+			if (squadre != null && !squadre.isEmpty()){
+
+		        throw new IllegalStateException("Cannot delete the Jersey as it is already linked to a Squadra.");
+
 			}
 			
 			jerseyRepository.deleteById(id);

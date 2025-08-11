@@ -1,5 +1,8 @@
 package com.epicode.progettofinaleepicode.auth.config;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -23,6 +26,10 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.CorsConfigurationSource;
+
 
 @Configuration
 @EnableWebSecurity
@@ -80,10 +87,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 		.and()
 		.authorizeRequests()
+		.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 		.antMatchers("/**")
 		.permitAll()
 		.anyRequest()
 		.authenticated();
+		
+//		 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()   
+//	        .antMatchers("/auth/**", "/public/**").permitAll()   
+//	        .anyRequest().authenticated(); 
 			
 //			.and()
 //			.authorizeRequests().antMatchers("/auth/login").permitAll()
@@ -100,5 +112,23 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.headers().frameOptions().disable();
 		http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 	}
+	
+//	@Bean
+//	public CorsConfigurationSource corsConfigurationSource() {
+//		CorsConfiguration config = new CorsConfiguration();
+//		config.setAllowedOriginPatterns(Arrays.asList(
+//				  "http://localhost:4200",
+//				  "https://mio-frontend.herokuapp.com"
+//				));
+//	    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+//	    config.addAllowedHeader("*");
+//	    config.setAllowCredentials(true);
+//
+//	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//	    source.registerCorsConfiguration("/**", config);
+//	    return source;
+//	}
+
+
 }
 
