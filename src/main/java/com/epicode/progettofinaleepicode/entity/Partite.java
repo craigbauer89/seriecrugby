@@ -41,7 +41,12 @@ public class Partite {
 	private int meteSquadra1 =0;
 	private int meteSquadra2 =0;
 	private Long classifica_id;
-	//home_win??????
+	private String tickets; 
+	
+	@ManyToOne
+	@JoinColumn(name = "channel_id")
+	private Channel channel;
+	
 	
 	@ManyToOne
 	@JoinColumn(name = "mainClassifica_id")

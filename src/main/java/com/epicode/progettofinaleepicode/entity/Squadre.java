@@ -13,6 +13,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -24,10 +25,10 @@ import lombok.ToString;
 
 @Entity
 @Data
-@ToString(exclude = {"homeGames", "classifica", "awaygames"})
+@ToString(exclude = {"homeGames", "classifica", "awaygames", "players"})
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties({"hibernateLazyInitializer","handler", "homeGames", "awaygames", "classifica"})
+@JsonIgnoreProperties({"hibernateLazyInitializer","handler", "homeGames", "awaygames", "classifica", "players"})
 public class Squadre {
 	
 	
@@ -59,15 +60,25 @@ public class Squadre {
 	private int differenza =0;
 	private int girone;
 	
-	@OneToMany(mappedBy = "squadra1",fetch = FetchType.EAGER)
+	@OneToOne
+	@JoinColumn(name = "stadium_id")
+	private Stadium stadium;
+	
+	//@OneToMany(mappedBy = "squadra", fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "squadra")
+	private List<Player> players;
+	
+	//@OneToMany(mappedBy = "squadra1",fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "squadra1")
     private List<Partite> homeGames;  // Games where this team is squadra1
 
-	@OneToMany(mappedBy = "squadra2",fetch = FetchType.EAGER)
+	//@OneToMany(mappedBy = "squadra2",fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "squadra2")
     private List<Partite> awaygames; 
 	
 	
-	
-	@ManyToMany(mappedBy = "squadre",fetch = FetchType.EAGER)
+	//@ManyToMany(mappedBy = "squadre",fetch = FetchType.EAGER)
+	@ManyToMany(mappedBy = "squadre")
 	private List<Classifica> classifica = new ArrayList<>();
 	
 	  public void calcolaDifferenza() {

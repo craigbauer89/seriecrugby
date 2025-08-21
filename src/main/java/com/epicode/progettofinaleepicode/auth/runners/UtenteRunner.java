@@ -14,6 +14,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.Lob;
+
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -27,16 +29,24 @@ import com.epicode.progettofinaleepicode.auth.entity.Utente;
 import com.epicode.progettofinaleepicode.auth.repository.RoleRepository;
 import com.epicode.progettofinaleepicode.auth.repository.UserRepository;
 import com.epicode.progettofinaleepicode.entity.Championship;
+import com.epicode.progettofinaleepicode.entity.Channel;
 import com.epicode.progettofinaleepicode.entity.Classifica;
 import com.epicode.progettofinaleepicode.entity.Jersey;
+import com.epicode.progettofinaleepicode.entity.News;
 import com.epicode.progettofinaleepicode.entity.Partite;
+import com.epicode.progettofinaleepicode.entity.Player;
 import com.epicode.progettofinaleepicode.entity.Season;
 import com.epicode.progettofinaleepicode.entity.Squadre;
+import com.epicode.progettofinaleepicode.entity.Stadium;
 import com.epicode.progettofinaleepicode.repository.JerseyRepository;
+import com.epicode.progettofinaleepicode.repository.NewsRepository;
 import com.epicode.progettofinaleepicode.repository.PartiteRepository;
+import com.epicode.progettofinaleepicode.repository.PlayerRepository;
 import com.epicode.progettofinaleepicode.repository.SquadreRepository;
+import com.epicode.progettofinaleepicode.repository.StadiumRepository;
 import com.epicode.progettofinaleepicode.service.SquadreService;
 import com.epicode.progettofinaleepicode.repository.ChampionshipRepository;
+import com.epicode.progettofinaleepicode.repository.ChannelRepository;
 import com.epicode.progettofinaleepicode.repository.SeasonRepository;
 import com.epicode.progettofinaleepicode.repository.ClassificaRepository;
 
@@ -59,6 +69,10 @@ public class UtenteRunner implements ApplicationRunner {
 	UserRepository userRepository;
 	PasswordEncoder encoder;
 	SquadreService squadraService;
+	StadiumRepository stadiumRepository;
+	ChannelRepository channelRepository;
+	NewsRepository newsRepository;
+	PlayerRepository playerRepository;
 	
 
 	@Override
@@ -105,6 +119,7 @@ public class UtenteRunner implements ApplicationRunner {
 		}
 		
 		List<Squadre> squadre = readSquadreFromCSV("squadre3.csv"); 
+		
 
 		
 		String[] seasonslist = {"2021","2020","2023","2025","2019","2018","2022","2024" };
@@ -199,6 +214,7 @@ public class UtenteRunner implements ApplicationRunner {
 						}
 						classifica.setSquadre(classificaSquadre);
 						List<Partite> partite = readPartiteFromCSV("partite.csv",squadre); 
+
 						List<Partite> classificaPartite = new ArrayList<Partite>();
 						for (Partite p : partite) { 
 							System.out.println(p);
@@ -272,18 +288,52 @@ public class UtenteRunner implements ApplicationRunner {
 //			}	
 		
 		//TESTING//
+		List<Squadre> repoSquadre  = squadraRepository.findAll();
+		
+		List<Stadium> stadium = readStadiumFromCSV("stadium.csv",repoSquadre); 
+		for (Stadium s : stadium) { 
+			System.out.println(s);
+			stadiumRepository.save(s);
+			}	
+		
+		List<News> news = readNewsFromCSV("news.csv"); 
+		for (News s : news) { 
+			System.out.println(s);
+			newsRepository.save(s);
+			}
+		
+		List<Channel> channels = readChannelFromCSV("channels.csv"); 
+		for (Channel s : channels) { 
+			System.out.println(s);
+			channelRepository.save(s);
+			}
+		
+
+		List<Player> players = readPlayersFromCSV("players.csv",repoSquadre); 
+		for (Player s : players) { 
+			System.out.println(s);
+			playerRepository.save(s);
+			}
+		
+		
 		
 		Long id = (long) 1;
-		java.util.Optional<Squadre> testSquadra = squadraService.getById(id);
-		List<Classifica> testClassifca = testSquadra.get().getClassifica();
+		//java.util.Optional<Squadre> testSquadra = squadraService.getById(id);
+		//List<Classifica> testClassifca = testSquadra.get().getClassifica();
+		//need to get the above the opposite way, throguh classica, not through squadra  - as will show alzy load , session closed error
+		
+		String anno = "2022";
+		List<Classifica> testClassifca = classificaRepository.findBySquadraIdAndSeasonYear(id, anno);
 		System.out.println(testClassifca);
 		
 		
-		List<Partite> testHomePartite = testSquadra.get().getAwaygames();
-		List<Partite> testAwayPartite = testSquadra.get().getAwaygames();
+		// if the below is somethign you want to provide, need to revisit
+				
+		//List<Partite> testHomePartite = testSquadra.get().getAwaygames();
+		//List<Partite> testAwayPartite = testSquadra.get().getAwaygames();
 		
-		System.out.println("HOMEGAMES"+ testHomePartite);
-		System.out.println("AWAYGAMES"+ testAwayPartite);
+		//System.out.println("HOMEGAMES"+ testHomePartite);
+		//System.out.println("AWAYGAMES"+ testAwayPartite);
 		
 	}
 			 
@@ -307,6 +357,69 @@ public class UtenteRunner implements ApplicationRunner {
 		return partite; 
 		
 		} 
+	
+	private static List<News> readNewsFromCSV(String fileName ) { 
+		List<News> news = new ArrayList<>();
+		Path pathToFile = Paths.get(fileName); 
+		
+		try (BufferedReader br = Files.newBufferedReader(pathToFile, StandardCharsets.US_ASCII)) {
+			
+			String line = br.readLine();
+			
+			while (line != null) { 
+				String[] attributes = line.split(","); 
+				News news1 = createNews(attributes); 
+				news.add(news1); // read next line before looping // if end of file reached, line would be null 
+				line = br.readLine(); 
+				} 
+			} catch (IOException ioe) { 
+				ioe.printStackTrace();
+			} 
+		return news; 
+		
+	} 
+	
+	private static List<Channel> readChannelFromCSV(String fileName) { 
+		List<Channel> channels = new ArrayList<>();
+		Path pathToFile = Paths.get(fileName); 
+		
+		try (BufferedReader br = Files.newBufferedReader(pathToFile, StandardCharsets.US_ASCII)) {
+			
+			String line = br.readLine();
+			
+			while (line != null) { 
+				String[] attributes = line.split(","); 
+				Channel channel = createChannel(attributes); 
+				channels.add(channel); // read next line before looping // if end of file reached, line would be null 
+				line = br.readLine(); 
+				} 
+			} catch (IOException ioe) { 
+				ioe.printStackTrace();
+			} 
+		return channels; 
+		
+	} 
+	
+	private static List<Player> readPlayersFromCSV(String fileName,List<Squadre> squadre  ) { 
+		List<Player> players = new ArrayList<>();
+		Path pathToFile = Paths.get(fileName); 
+		
+		try (BufferedReader br = Files.newBufferedReader(pathToFile, StandardCharsets.US_ASCII)) {
+			
+			String line = br.readLine();
+			
+			while (line != null) { 
+				String[] attributes = line.split(","); 
+				Player player = createPlayer(attributes, squadre); 
+				players.add(player); // read next line before looping // if end of file reached, line would be null 
+				line = br.readLine(); 
+				} 
+			} catch (IOException ioe) { 
+				ioe.printStackTrace();
+			} 
+		return players; 
+		
+	} 
 		
 		private static List<Squadre> readSquadreFromCSV(String fileName) { 
 			List<Squadre> squadre = new ArrayList<>();
@@ -326,6 +439,27 @@ public class UtenteRunner implements ApplicationRunner {
 					ioe.printStackTrace();
 				} 
 			return squadre; 
+			
+			} 
+		
+		private static List<Stadium> readStadiumFromCSV(String fileName,List<Squadre> squadre ) { 
+			List<Stadium> stadiums = new ArrayList<>();
+			Path pathToFile = Paths.get(fileName); 
+			
+			try (BufferedReader br = Files.newBufferedReader(pathToFile, StandardCharsets.US_ASCII)) {
+				
+				String line = br.readLine();
+				
+				while (line != null) { 
+					String[] attributes = line.split(","); 
+					Stadium stadium = createStadium(attributes, squadre); 
+					stadiums.add(stadium); // read next line before looping // if end of file reached, line would be null 
+					line = br.readLine(); 
+					} 
+				} catch (IOException ioe) { 
+					ioe.printStackTrace();
+				} 
+			return stadiums; 
 			
 			} 
 		
@@ -383,6 +517,42 @@ public class UtenteRunner implements ApplicationRunner {
 		
 		}
 		
+private static Stadium createStadium(String[] metadata, List<Squadre> squadre) { 
+			
+	
+			Long id = new Long(metadata[0]);
+			BigDecimal latitude = new BigDecimal(metadata[1]);
+			BigDecimal longitude =  new BigDecimal(metadata[2]);
+			 String nome  =  metadata[3];
+			 String allenatore = metadata[4];
+			 String indirizzo  = metadata[5];
+			 String sito  =  metadata[6];
+			 String telefono   =  metadata[7];
+			 Squadre squadra =new Squadre();
+				 for (Squadre s : squadre) { 
+						if (s.getId().equals(new Long(metadata[9]))) {
+							squadra = s;
+						}
+						}
+			 
+			 String picture  =  (metadata[8]);
+			 
+				
+			Stadium stadium  = new Stadium();
+			stadium.setLatitude(latitude);
+			stadium.setLongitude(longitude);
+			stadium.setName(nome);
+			stadium.setAllenatore(allenatore);
+			stadium.setIndirizzo(indirizzo);
+			stadium.setTelefono(telefono);
+			stadium.setSito(sito);
+			stadium.setPicture(picture);	
+			stadium.setSquadra(squadra);
+			
+			return stadium;
+		
+		}
+		
 		private static Jersey createJersey(Long id, String colour) { 
 			
 			List<Squadre> squadre = new ArrayList<Squadre>();
@@ -396,6 +566,7 @@ public class UtenteRunner implements ApplicationRunner {
 		return jersey;
 			
 		}
+		
 
 	
 		private static Partite createPartita(String[] metadata,List<Squadre> squadre) { 
@@ -425,6 +596,8 @@ public class UtenteRunner implements ApplicationRunner {
 			 
 			 Integer score2  =  new Integer(metadata[5]);
 			 Integer mete2   = new Integer(metadata[6]);
+			 String tickets = squadra1.getAllenatore();
+			
 			 
 			
 			Partite partite  = new Partite();
@@ -436,19 +609,73 @@ public class UtenteRunner implements ApplicationRunner {
 			partite.setSquadra2((Squadre)squadra2);
 			partite.setPuntisquadra2(score2);
 			partite.setMeteSquadra2(mete2);
-			partite.setClassifica_id(girone);					
+			partite.setClassifica_id(girone);	
+			partite.setTickets(tickets);
 		return partite;
 				
 		
 		
 			
 		}
+		
+		private static Channel createChannel(String[] metadata) { 
+			
+			Channel channel  = new Channel();
+			channel.setCountry(metadata[1]);
+			channel.setName(metadata[2]);
+			channel.setFree(metadata[3].equals("Yes"));
+
+			return channel;
+				
+		}
 	
+	private static News createNews(String[] metadata) { 
+			
+		
+
+			String title = metadata[1];
+			String content = metadata[2];
+			String picture = metadata[3];
+		
+			News news  = new News();
+
+			
+			news.setContent(content);	
+			news.setPicture(picture);	
+			news.setTitle(title);			
+			return news;
+				
+			
+		}
 
 
+	
+	private static Player createPlayer(String[] metadata,List<Squadre> squadre) { 
+		
+		String name = metadata[1];
+		Integer tries =  new Integer(metadata[2]);
 
+		Squadre squadra1 =new Squadre();
+		 for (Squadre s : squadre) { 
+				if (s.getId().equals(new Long(metadata[3]))) {
+					squadra1 = s;
+				}
+				}
+		
+		
+		 Player player  = new Player();
+		 player.setName(name);
+		 player.setTries(0);	
+		 player.setSquadra((Squadre)squadra1);
+		 
+		 
+		 
+	return player;
+			
+	
 	
 		
+	}
 		
 	
 }

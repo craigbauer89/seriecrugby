@@ -41,8 +41,8 @@ public class Classifica {
 	@JoinColumn(name = "championship_id")
 	private Championship championship;
 	
-	
-	@ManyToMany(fetch = FetchType.EAGER)
+	//@ManyToMany(fetch = FetchType.EAGER)
+	@ManyToMany
 	@JoinTable(
 			  name = "Classifica_Squadra", 
 			  joinColumns = @JoinColumn(name = "classifica_id"), 
@@ -50,7 +50,8 @@ public class Classifica {
 	private List<Squadre> squadre = new ArrayList<>();
 	
 	
-	@OneToMany(mappedBy = "classifica", fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+	//@OneToMany(mappedBy = "classifica", fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "classifica",cascade = CascadeType.ALL)
     private List<Partite> partite; 
 	
 	

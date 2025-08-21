@@ -6,6 +6,7 @@ import java.util.Set;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import org.springframework.beans.BeanUtils;
@@ -17,6 +18,7 @@ import com.epicode.progettofinaleepicode.entity.Championship;
 import com.epicode.progettofinaleepicode.entity.Classifica;
 import com.epicode.progettofinaleepicode.entity.Jersey;
 import com.epicode.progettofinaleepicode.entity.Partite;
+import com.epicode.progettofinaleepicode.entity.Player;
 import com.epicode.progettofinaleepicode.entity.Season;
 import com.epicode.progettofinaleepicode.entity.Squadre;
 import com.epicode.progettofinaleepicode.entity.SquadreDto;
@@ -134,6 +136,7 @@ public class SquadreService {
 
 			List <Partite> partiteHome = squadra.getHomeGames();
 			List <Partite> partiteAway = squadra.getAwaygames();
+			List <Player> players = squadra.getPlayers();
 			
 			
 			if (partiteHome != null && partiteAway != null &&  !partiteHome.isEmpty() && !partiteAway.isEmpty()){
@@ -142,8 +145,13 @@ public class SquadreService {
 
 			}
 			
-		
+			if (players != null && !players.isEmpty()){
+				
+		        throw new IllegalStateException("Cannot delete the squadre as it is already linked to a Player.");
+
+			}
 			
+		
 			squadreRepository.deleteById(id);
 		}
 		
