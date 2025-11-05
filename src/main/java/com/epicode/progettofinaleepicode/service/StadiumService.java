@@ -14,11 +14,15 @@ import com.epicode.progettofinaleepicode.entity.Championship;
 import com.epicode.progettofinaleepicode.entity.Classifica;
 import com.epicode.progettofinaleepicode.entity.News;
 import com.epicode.progettofinaleepicode.entity.NewsDto;
+import com.epicode.progettofinaleepicode.entity.Picture;
+import com.epicode.progettofinaleepicode.entity.Squadre;
 import com.epicode.progettofinaleepicode.entity.Stadium;
 import com.epicode.progettofinaleepicode.entity.StadiumDto;
 import com.epicode.progettofinaleepicode.repository.ChampionshipRepository;
 import com.epicode.progettofinaleepicode.repository.NewsRepository;
+import com.epicode.progettofinaleepicode.repository.PictureRepository;
 import com.epicode.progettofinaleepicode.repository.SeasonRepository;
+import com.epicode.progettofinaleepicode.repository.SquadreRepository;
 import com.epicode.progettofinaleepicode.repository.StadiumRepository;
 
 import lombok.AllArgsConstructor;
@@ -28,6 +32,8 @@ import lombok.AllArgsConstructor;
 public class StadiumService {
 	
 	private StadiumRepository  stadiumRepository;
+	private PictureRepository  pictureRepository;
+	private SquadreRepository  squadreRepository;
 	
 	private ObjectProvider<Stadium> stadiumProvider;
 	
@@ -46,7 +52,11 @@ public class StadiumService {
 	}
 	
 
-	public Stadium insert(StadiumDto dto) {
+	public Stadium insert(StadiumDto dto, Long picture_id) {
+		
+		Picture picture = pictureRepository.findById(picture_id).orElseThrow(() -> new RuntimeException("Picture not found"));
+
+		
 		if(stadiumRepository.existsByName(dto.getName())) {
 			throw new EntityExistsException("Stadium gia inserito");
 		}
@@ -54,25 +64,54 @@ public class StadiumService {
 		Stadium stadium = stadiumProvider.getObject();
 		BeanUtils.copyProperties(dto, stadium);
 		
+		stadium.setPicture(picture);
 		return stadiumRepository.save(stadium);
+		
+	//	if (squadra.getStadium() != null){
+			
+	  //      throw new IllegalStateException("Squadra already linked to a Stadium.");
+
+		//}
+		
+		//else {
+	//	stadium.setSquadra(squadra);
+	//	squadra.setStadium(stadium);
+		//squadreRepository.save(squadra);
+		//}
+	
+		
+		//return stadiumRepository.save(stadium);
+	    // Perché `squadra.setStadium(stadium)` + `@OneToOne(cascade = CascadeType.ALL)` si occupa di salvare lo stadio
+
+		// return squadreRepository.save(squadra).getStadium(); 
 		
 	}
 	
 
-		public Stadium update(Long id, StadiumDto dto) {
+		public Stadium update(Long id, StadiumDto dto, Long picture_id) {
 		
-		Optional<Stadium> stadiumUpdate = stadiumRepository.findById(id);
-		if (!stadiumUpdate.isPresent()) {
-			throw new EntityNotFoundException();	
+
+			
+			Optional<Stadium> stadiumUpdate = stadiumRepository.findById(id);
+			if (!stadiumUpdate.isPresent()) {
+				throw new EntityNotFoundException();	
+			}
+			
+			Stadium stadium = stadiumUpdate.get();
+			BeanUtils.copyProperties(dto, stadium);
+			
+			Picture picture = pictureRepository.findById(picture_id)
+		            .orElseThrow(() -> new RuntimeException("Picture non trovata"));
+	
+			 stadium.setPicture(picture);
+
+
+
+			    return stadiumRepository.save(stadium);
+
+
+		
 		}
-		
-		Stadium stadium = stadiumUpdate.get();
-		BeanUtils.copyProperties(dto, stadium);
-		
-		
-		return stadiumRepository.save(stadium);
-		
-	}
 		
 		public void cancella(Long id) {
 			if (!stadiumRepository.existsById(id)) {

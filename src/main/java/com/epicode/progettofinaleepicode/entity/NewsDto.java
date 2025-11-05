@@ -20,6 +20,6 @@ public class NewsDto {
 	
 	private String content;
 	
-	private String picture;
+
 
 }

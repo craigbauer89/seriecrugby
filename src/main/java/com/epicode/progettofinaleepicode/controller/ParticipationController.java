@@ -15,59 +15,62 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epicode.progettofinaleepicode.entity.Championship;
-import com.epicode.progettofinaleepicode.entity.ChampionshipDto;
-import com.epicode.progettofinaleepicode.entity.Classifica;
-import com.epicode.progettofinaleepicode.entity.ClassificaDto;
 import com.epicode.progettofinaleepicode.entity.News;
 import com.epicode.progettofinaleepicode.entity.NewsDto;
-import com.epicode.progettofinaleepicode.service.ChampionshipService;
+import com.epicode.progettofinaleepicode.entity.Participation;
+import com.epicode.progettofinaleepicode.entity.ParticipationDto;
 import com.epicode.progettofinaleepicode.service.NewsService;
+import com.epicode.progettofinaleepicode.service.ParticipationService;
 
 import lombok.AllArgsConstructor;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/news")
+@RequestMapping("/participation")
 @CrossOrigin
-public class NewsController {
-	
-	private NewsService  newsService;
+public class ParticipationController {
+
+
+	private ParticipationService  participationService;
 
 	@GetMapping
 	@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
-	public ResponseEntity<List<News>> getAll() {
-		return ResponseEntity.ok(newsService.getAll());
+	public ResponseEntity<List<Participation>> getAll() {
+		return ResponseEntity.ok(participationService.getAll());
+	}
+	
+	@GetMapping("/classifica/{id}")
+	@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+	public ResponseEntity<List<Participation>> getAllByClassifica(@PathVariable Long id) {
+		return ResponseEntity.ok(participationService.getAllByClassifica(id));
 	}
 	
 	
-	@PostMapping("/{picture_id}")
+	@PostMapping
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
-	public ResponseEntity<News> insert(@RequestBody NewsDto dto,@PathVariable Long picture_id) {
-		return ResponseEntity.ok(newsService.insert(dto,picture_id));
+	public ResponseEntity<Participation> insert(@RequestBody ParticipationDto dto) {
+		return ResponseEntity.ok(participationService.insert(dto));
 	}
 	
 
-	
-	
 	@GetMapping("/{id}")
 	@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
-	public ResponseEntity<Optional<News>> getById(@PathVariable Long id) {
-		return ResponseEntity.ok(newsService.getById(id));
+	public ResponseEntity<Optional<Participation>> getById(@PathVariable Long id) {
+		return ResponseEntity.ok(participationService.getById(id));
 	}
 	
 	
-	@PutMapping("/{id}/{picture_id}")
+	@PutMapping("/{id}")
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
-	public ResponseEntity<News> update(@PathVariable Long id,@RequestBody NewsDto dto,@PathVariable Long picture_id) {
-		return ResponseEntity.ok(newsService.update(id, dto,picture_id));
+	public ResponseEntity<Participation> update(@PathVariable Long id,@RequestBody ParticipationDto dto) {
+		return ResponseEntity.ok(participationService.update(id, dto));
 	}
 	
 	@DeleteMapping("/{id}")
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	public ResponseEntity<String> delete(@PathVariable Long id) {
-		newsService.cancella(id);
-		return ResponseEntity.ok("News cancellato");
+		participationService.cancella(id);
+		return ResponseEntity.ok("Participation cancellato");
 	}
 
 }

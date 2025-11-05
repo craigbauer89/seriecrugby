@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.epicode.progettofinaleepicode.entity.News;
+import com.epicode.progettofinaleepicode.entity.NewsDto;
 import com.epicode.progettofinaleepicode.entity.Stadium;
 import com.epicode.progettofinaleepicode.entity.StadiumDto;
 import com.epicode.progettofinaleepicode.service.ChampionshipService;
@@ -38,11 +39,12 @@ public class StadiumController {
 	}
 	
 	
-	@PostMapping
+	@PostMapping("/{picture_id}")
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
-	public ResponseEntity<Stadium> insert(@RequestBody StadiumDto dto) {
-		return ResponseEntity.ok(stadiumService.insert(dto));
+	public ResponseEntity<Stadium> insert(@RequestBody StadiumDto dto,@PathVariable Long picture_id) {
+		return ResponseEntity.ok(stadiumService.insert(dto,picture_id));
 	}
+
 	
 	
 	@GetMapping("/{id}")
@@ -52,10 +54,10 @@ public class StadiumController {
 	}
 	
 	
-	@PutMapping("/{id}")
+	@PutMapping("/{id}/{picture_id}")
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
-	public ResponseEntity<Stadium> update(@PathVariable Long id,@RequestBody StadiumDto dto) {
-		return ResponseEntity.ok(stadiumService.update(id, dto));
+	public ResponseEntity<Stadium> update(@PathVariable Long id,@RequestBody StadiumDto dto,@PathVariable Long picture_id) {
+		return ResponseEntity.ok(stadiumService.update(id, dto,picture_id));
 	}
 	
 	@DeleteMapping("/{id}")

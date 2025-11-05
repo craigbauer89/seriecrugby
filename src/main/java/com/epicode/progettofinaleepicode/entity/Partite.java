@@ -42,6 +42,7 @@ public class Partite {
 	private int meteSquadra2 =0;
 	private Long classifica_id;
 	private String tickets; 
+	private Boolean played;
 	
 	@ManyToOne
 	@JoinColumn(name = "channel_id")

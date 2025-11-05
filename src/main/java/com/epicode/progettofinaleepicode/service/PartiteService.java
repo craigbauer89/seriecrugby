@@ -13,13 +13,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import com.epicode.progettofinaleepicode.entity.Channel;
 import com.epicode.progettofinaleepicode.entity.Classifica;
 import com.epicode.progettofinaleepicode.entity.Jersey;
+import com.epicode.progettofinaleepicode.entity.Participation;
 import com.epicode.progettofinaleepicode.entity.Partite;
 import com.epicode.progettofinaleepicode.entity.PartiteDto;
+import com.epicode.progettofinaleepicode.entity.Picture;
 import com.epicode.progettofinaleepicode.entity.Squadre;
 import com.epicode.progettofinaleepicode.entity.SquadreDto;
+import com.epicode.progettofinaleepicode.repository.ChannelRepository;
 import com.epicode.progettofinaleepicode.repository.ClassificaRepository;
+import com.epicode.progettofinaleepicode.repository.ParticipationRepository;
 import com.epicode.progettofinaleepicode.repository.PartiteRepository;
 import com.epicode.progettofinaleepicode.repository.SquadreRepository;
 
@@ -33,7 +38,7 @@ import lombok.AllArgsConstructor;
 //@Validated
 public class PartiteService {
 	
-
+	private ChannelRepository channelRepository;
 
 	private PartiteRepository  partiteRepository;
 	
@@ -42,6 +47,7 @@ public class PartiteService {
 	private SquadreRepository  squadreRepository;
 	
 	private ObjectProvider<Partite> partiteProvider;
+	private ParticipationRepository participationRepository;
 	
 
 	public List<Partite> getAll() {
@@ -55,7 +61,9 @@ public class PartiteService {
 	public List<Partite> getAllBySquadra(Long squadra_id) {
 		return partiteRepository.getAllBySquadra(squadra_id);
 	}
-	
+	public List<Partite> getAllByClassifica(Long classifica_id) {
+		return partiteRepository.getAllByClassifica(classifica_id);
+	}
 	
 	public Optional<Partite> getById(Long id) {
 		Optional<Partite>  partita = partiteRepository.findById(id);
@@ -73,7 +81,7 @@ public class PartiteService {
 	}
 	
 		//	public Partite insert(@Valid PartiteDto dto) {
-	public Partite insert(PartiteDto dto) {
+	public Partite insert(PartiteDto dto, Long channel_id) {
 		//		if(partiteRepository.existsByDate(dto.getDate())) {
 		//			throw new EntityExistsException("Partita gia inserito");
 		//		}
@@ -93,6 +101,11 @@ public class PartiteService {
 	    partita.setSquadra1(squadra1);
 	    partita.setSquadra2(squadra2);
 	    
+		Channel channel = channelRepository.findById(channel_id)
+	            .orElseThrow(() -> new RuntimeException("Channel non trovata"));
+
+		partita.setChannel(channel);
+	    
 	    partita.setClassifica(classifica);	 
 	    
 	    
@@ -108,8 +121,12 @@ public class PartiteService {
 	
 	    //_______________________________
 	    
-		updateSquadra(dto);
-
+		if (dto.getPlayed()) {
+			updateSquadra(dto,classifica.getId());
+		
+		}
+		
+		
 		return partiteRepository.save(partita);
 		
 	}
@@ -122,8 +139,20 @@ public class PartiteService {
 			throw new EntityNotFoundException();	
 		}
 		
-		resetSquadra(id);
-		updateSquadra(dto);
+		Classifica classifica = classificaRepository.findById(dto.getClassifica_id())
+                .orElseThrow(() -> new RuntimeException("Classifica non trovata"));
+		
+		if (partitaUpdate.get().getPlayed()) {
+			resetSquadra(id,classifica.getId());
+		}
+		
+		
+				if (dto.getPlayed()) {
+					resetSquadra(id,classifica.getId());
+					updateSquadra(dto,classifica.getId());
+				
+				}
+				
 		
 		Partite partita = partitaUpdate.get();
 			
@@ -142,9 +171,6 @@ public class PartiteService {
 			
 			squadreRepository.save(squadra1);
 			squadreRepository.save(squadra2);
-		
-		    //_______________________________
-		 
 		    
 		  
 		    
@@ -156,10 +182,12 @@ public class PartiteService {
 		if (!partiteRepository.existsById(id)) {
 			throw new EntityNotFoundException("Partite not trovato");
 		}
-		
-		resetSquadra(id);
-		
 		Partite partita = partiteRepository.findById(id).orElseThrow(() -> new RuntimeException("Partita not found"));
+		
+		Long classifica_id = partita.getClassifica_id();
+		
+		resetSquadra(id,classifica_id);
+		
 
 		   Squadre squadra1 = squadreRepository.findById(partita.getSquadra1().getId())
 	                .orElseThrow(() -> new RuntimeException("Squadra 1 non trovata"));
@@ -182,7 +210,7 @@ public class PartiteService {
 	}
 
 	
-	public void updateSquadra(PartiteDto dto) {
+	public void updateSquadra(PartiteDto dto, Long classifica_id ) {
 		
 		//go back and undo the below if does not work
 		//Squadre squadra1 = getSquadre(dto.getSquadra1().getId() );
@@ -190,45 +218,113 @@ public class PartiteService {
 		Squadre squadra1 = getSquadre(dto.getSquadra1_id() );
 		Squadre squadra2 = getSquadre(dto.getSquadra2_id() );
 		
+		
+		Participation squadra1Participation = participationRepository.findBySquadraIdAndClassificaId(dto.getSquadra1_id(), classifica_id);
+		Participation squadra2Participation = participationRepository.findBySquadraIdAndClassificaId(dto.getSquadra2_id(), classifica_id);
+		
+		
+		int puntisquadra1Count = squadra1.getPunti();
+		int puntisquadra2Count = squadra2.getPunti();
+		
 		int resultDto = dto.getPuntisquadra1()- dto.getPuntisquadra2();
 		
-		if (resultDto > 1) {
-			squadra1.setPunti(squadra1.getPunti()+4);
+		if (resultDto >= -7 && resultDto < 0)	{
+			puntisquadra1Count += 1;
+		
+		}
+		
+		if (resultDto <= 7 && resultDto > 0)	{
+			puntisquadra2Count +=  1;
+	
+		}
+		
+		if (dto.getMeteSquadra1()>= 4) { 
+			puntisquadra1Count +=  1;
+			
+		}
+		
+		if (dto.getMeteSquadra2()>= 4) { 
+			puntisquadra2Count +=  1;
+			
+		}
+		
+		if (resultDto > 0) {
+			puntisquadra1Count +=  4;
+			
 			squadra2.setSconfitte(squadra2.getSconfitte()+1);
 			squadra1.setVittorie(squadra1.getVittorie()+1);
+			
+			squadra2Participation.setSconfitte(squadra2Participation.getSconfitte()+1);
+			squadra1Participation.setVittorie(squadra1Participation.getVittorie()+1);
 		}
-		else if (resultDto < 1) {
+		else if (resultDto < 0) {
 			squadra1.setSconfitte(squadra1.getSconfitte()+1);
 			squadra2.setVittorie(squadra2.getVittorie()+1);
-			squadra2.setPunti(squadra2.getPunti()+4);
+			
+			squadra1Participation.setSconfitte(squadra1Participation.getSconfitte()+1);
+			squadra2Participation.setVittorie(squadra2Participation.getVittorie()+1);
+			
+			puntisquadra2Count += 4;
+			
 		}
 		else {
-			squadra1.setPunti(squadra1.getPunti()+2);
+			puntisquadra1Count += 2;
+			//squadra1.setPunti(squadra1.getPunti()+2);
 			squadra1.setPareggi(squadra1.getPareggi()+1);
-			squadra2.setPunti(squadra2.getPunti()+2);
+			
+			squadra1Participation.setPareggi(squadra1Participation.getPareggi()+1);
+			
+			puntisquadra2Count += 2;
+			//squadra2.setPunti(squadra2.getPunti()+2);
 			squadra2.setPareggi(squadra2.getPareggi()+1);
+			
+			squadra2Participation.setPareggi(squadra2Participation.getPareggi()+1);
+			
 			}
 		
 		squadra1.setMeteFatti(squadra1.getMeteFatti() + dto.getMeteSquadra1());
 		squadra1.setMeteSubiti(squadra1.getMeteSubiti()+ dto.getMeteSquadra2());
 		squadra1.setPuntiSubiti(squadra1.getPuntiSubiti()+dto.getPuntisquadra2());		
 		squadra1.setPuntiFatti(squadra1.getPuntiFatti()+dto.getPuntisquadra1());;	
+		
+		squadra1Participation.setMeteFatti(squadra1Participation.getMeteFatti() + dto.getMeteSquadra1());
+		squadra1Participation.setMeteSubiti(squadra1Participation.getMeteSubiti()+ dto.getMeteSquadra2());
+		squadra1Participation.setPuntiSubiti(squadra1Participation.getPuntiSubiti()+dto.getPuntisquadra2());		
+		squadra1Participation.setPuntiFatti(squadra1Participation.getPuntiFatti()+dto.getPuntisquadra1());;	
+		
 	
 		squadra2.setMeteFatti(squadra2.getMeteFatti() + dto.getMeteSquadra2());
 		squadra2.setMeteSubiti(squadra2.getMeteSubiti()+ dto.getMeteSquadra1());
 		squadra2.setPuntiSubiti(squadra2.getPuntiSubiti()+dto.getPuntisquadra1());		
 		squadra2.setPuntiFatti(squadra2.getPuntiFatti()+dto.getPuntisquadra2());;	
+		
+		squadra2Participation.setMeteFatti(squadra2Participation.getMeteFatti() + dto.getMeteSquadra2());
+		squadra2Participation.setMeteSubiti(squadra2Participation.getMeteSubiti()+ dto.getMeteSquadra1());
+		squadra2Participation.setPuntiSubiti(squadra2Participation.getPuntiSubiti()+dto.getPuntisquadra1());		
+		squadra2Participation.setPuntiFatti(squadra2Participation.getPuntiFatti()+dto.getPuntisquadra2());;		
 	
 		squadra1.setGiocate(squadra1.getGiocate()+1);
 		squadra2.setGiocate(squadra2.getGiocate()+1);
 		
-		/// does this get a new ID???
+		squadra1Participation.setGiocate(squadra1Participation.getGiocate()+1);
+		squadra2Participation.setGiocate(squadra2Participation.getGiocate()+1);
+		
+		squadra1.setPunti(puntisquadra1Count);
+		squadra2.setPunti(puntisquadra2Count);
+		
+		squadra1Participation.setPunti(puntisquadra1Count);
+		squadra2Participation.setPunti(puntisquadra2Count);
+		
 		squadreRepository.save(squadra1);
 		squadreRepository.save(squadra2);
 		
+		participationRepository.save(squadra1Participation);
+		participationRepository.save(squadra2Participation);
+		
+		
 	}
 	
-	public void resetSquadra(Long id) {
+	public void resetSquadra(Long id,Long classifica_Id) {
 		
 		Partite partita = partiteRepository.findById(id)
 	            .orElseThrow(EntityNotFoundException::new); 
@@ -236,23 +332,65 @@ public class PartiteService {
 		Squadre squadra1 = getSquadre(partita.getSquadra1().getId());
 		Squadre squadra2 = getSquadre(partita.getSquadra2().getId());
 		
+		Participation squadra1Participation = participationRepository.findBySquadraIdAndClassificaId(squadra1.getId(), classifica_Id);
+		Participation squadra2Participation = participationRepository.findBySquadraIdAndClassificaId(squadra2.getId(),  classifica_Id);
+		
+		
 		int result = partita.getPuntisquadra1()- partita.getPuntisquadra2();
+		
+		
+		if (result >= -7 && result < 0)	{
+			
+			squadra1.setPunti(squadra1.getPunti()-1);
+		
+		}
+		
+		if (result <= 7 && result > 0)	{
+			
+			squadra2.setPunti(squadra2.getPunti()-1);
+	
+		}
+		
+		if (partita.getMeteSquadra1()>= 4) { 
+			squadra1.setPunti(squadra1.getPunti()-1);
+			
+		}
+		
+		if (partita.getMeteSquadra2()>= 4) { 
+			squadra2.setPunti(squadra2.getPunti()-1);
+			
+		}
 		
 		if (result > 1) {
 			squadra1.setPunti(squadra1.getPunti()-4);
 			squadra2.setSconfitte(squadra2.getSconfitte()-1);
 			squadra1.setVittorie(squadra1.getVittorie()-1);
+			
+			squadra1Participation.setPunti(squadra1Participation.getPunti()-4);
+			squadra2Participation.setSconfitte(squadra2Participation.getSconfitte()-1);
+			squadra1Participation.setVittorie(squadra1Participation.getVittorie()-1);
+			
+			
 		}
 		else if (result < 1) {
 			squadra1.setSconfitte(squadra1.getSconfitte()-1);
 			squadra2.setVittorie(squadra2.getVittorie()-1);
 			squadra2.setPunti(squadra2.getPunti()-4);
+			
+			squadra1Participation.setSconfitte(squadra1Participation.getSconfitte()-1);
+			squadra2Participation.setVittorie(squadra2Participation.getVittorie()-1);
+			squadra2Participation.setPunti(squadra2Participation.getPunti()-4);
 		}
 		else {
 			squadra1.setPunti(squadra1.getPunti()-2);
 			squadra1.setPareggi(squadra1.getPareggi()-1);
 			squadra2.setPunti(squadra2.getPunti()-2);
 			squadra2.setPareggi(squadra2.getPareggi()-1);
+			
+			squadra1Participation.setPunti(squadra1Participation.getPunti()-2);
+			squadra1Participation.setPareggi(squadra1Participation.getPareggi()-1);
+			squadra2Participation.setPunti(squadra2Participation.getPunti()-2);
+			squadra2Participation.setPareggi(squadra2Participation.getPareggi()-1);
 		}
 		
 		squadra1.setMeteFatti(squadra1.getMeteFatti() - partita.getMeteSquadra1());
@@ -260,16 +398,32 @@ public class PartiteService {
 		squadra1.setPuntiSubiti(squadra1.getPuntiSubiti()-partita.getPuntisquadra2());		
 		squadra1.setPuntiFatti(squadra1.getPuntiFatti()-partita.getPuntisquadra1());;
 		
+		squadra1Participation.setMeteFatti(squadra1Participation.getMeteFatti() - partita.getMeteSquadra1());
+		squadra1Participation.setMeteSubiti(squadra1Participation.getMeteSubiti()- partita.getMeteSquadra2());
+		squadra1Participation.setPuntiSubiti(squadra1Participation.getPuntiSubiti()-partita.getPuntisquadra2());		
+		squadra1Participation.setPuntiFatti(squadra1Participation.getPuntiFatti()-partita.getPuntisquadra1());;
+		
 		squadra2.setMeteFatti(squadra2.getMeteFatti() - partita.getMeteSquadra2());
 		squadra2.setMeteSubiti(squadra2.getMeteSubiti()- partita.getMeteSquadra1());
 		squadra2.setPuntiSubiti(squadra2.getPuntiSubiti()-partita.getPuntisquadra1());		
 		squadra2.setPuntiFatti(squadra2.getPuntiFatti()-partita.getPuntisquadra2());;
 		
+		squadra2Participation.setMeteFatti(squadra2Participation.getMeteFatti() - partita.getMeteSquadra2());
+		squadra2Participation.setMeteSubiti(squadra2Participation.getMeteSubiti()- partita.getMeteSquadra1());
+		squadra2Participation.setPuntiSubiti(squadra2Participation.getPuntiSubiti()-partita.getPuntisquadra1());		
+		squadra2Participation.setPuntiFatti(squadra2Participation.getPuntiFatti()-partita.getPuntisquadra2());;
+		
 		squadra1.setGiocate(squadra1.getGiocate()-1);
 		squadra2.setGiocate(squadra2.getGiocate()-1);
 		
+		squadra1Participation.setGiocate(squadra1Participation.getGiocate()-1);
+		squadra2Participation.setGiocate(squadra2Participation.getGiocate()-1);
+		
 		squadreRepository.save(squadra1);
 		squadreRepository.save(squadra2);
+		
+		participationRepository.save(squadra1Participation);
+		participationRepository.save(squadra2Participation);
 	}
 
 }

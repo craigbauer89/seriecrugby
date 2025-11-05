@@ -54,13 +54,13 @@ public class SquadreController {
 	}
 	
 	
-	@PostMapping
+	@PostMapping("/{jersey_id}/{staidum_id}")
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
-	public ResponseEntity<Squadre> insert(@RequestBody SquadreDto dto) {
-		return ResponseEntity.ok(squadreService.insert(dto));
+	public ResponseEntity<Squadre> insert(@RequestBody SquadreDto dto, @PathVariable Long jersey_id, @PathVariable Long staidum_id) {
+		return ResponseEntity.ok(squadreService.insert(dto,jersey_id,staidum_id));
 	}
 	
-	@PostMapping("/{id}/{jersey_id}")
+	@PostMapping("jersey/{id}/{jersey_id}")
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	public ResponseEntity<Squadre> insertJersey(@PathVariable Long id,@PathVariable Long jersey_id ) {
 		return ResponseEntity.ok(squadreService.insertJersey(id, jersey_id));

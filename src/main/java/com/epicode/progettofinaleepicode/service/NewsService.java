@@ -12,9 +12,13 @@ import org.springframework.stereotype.Service;
 
 import com.epicode.progettofinaleepicode.entity.News;
 import com.epicode.progettofinaleepicode.entity.NewsDto;
+import com.epicode.progettofinaleepicode.entity.Picture;
+import com.epicode.progettofinaleepicode.entity.Championship;
 import com.epicode.progettofinaleepicode.entity.Classifica;
+import com.epicode.progettofinaleepicode.entity.ClassificaDto;
 import com.epicode.progettofinaleepicode.entity.Season;
 import com.epicode.progettofinaleepicode.repository.NewsRepository;
+import com.epicode.progettofinaleepicode.repository.PictureRepository;
 import com.epicode.progettofinaleepicode.repository.SeasonRepository;
 
 import lombok.AllArgsConstructor;
@@ -24,6 +28,7 @@ import lombok.AllArgsConstructor;
 public class NewsService {
 	
 	private NewsRepository  newsRepository;
+	private PictureRepository  pictureRepository;
 	
 	private ObjectProvider<News> newsProvider;
 	
@@ -42,7 +47,11 @@ public class NewsService {
 	}
 	
 
-	public News insert(NewsDto dto) {
+	public News insert(NewsDto dto, Long picture_id) {
+		
+		Picture picture = pictureRepository.findById(picture_id).orElseThrow(() -> new RuntimeException("Picture not found"));
+
+		
 		if(newsRepository.existsByTitle(dto.getTitle())) {
 			throw new EntityExistsException("News gia inserito");
 		}
@@ -50,12 +59,21 @@ public class NewsService {
 		News news = newsProvider.getObject();
 		BeanUtils.copyProperties(dto, news);
 		
+		news.setPicture(picture);
+		
 		return newsRepository.save(news);
 		
 	}
 	
 
-		public News update(Long id, NewsDto dto) {
+
+		
+		
+
+		public News update(Long id, NewsDto dto, Long picture_id) {
+			
+		Picture picture = pictureRepository.findById(picture_id).orElseThrow(() -> new RuntimeException("Picture not found"));
+
 		
 		Optional<News> newsUpdate = newsRepository.findById(id);
 		if (!newsUpdate.isPresent()) {
@@ -64,6 +82,8 @@ public class NewsService {
 		
 		News news = newsUpdate.get();
 		BeanUtils.copyProperties(dto, news);
+		
+		news.setPicture(picture);
 		
 		
 		return newsRepository.save(news);

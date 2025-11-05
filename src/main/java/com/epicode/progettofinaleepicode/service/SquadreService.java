@@ -18,12 +18,15 @@ import com.epicode.progettofinaleepicode.entity.Championship;
 import com.epicode.progettofinaleepicode.entity.Classifica;
 import com.epicode.progettofinaleepicode.entity.Jersey;
 import com.epicode.progettofinaleepicode.entity.Partite;
+import com.epicode.progettofinaleepicode.entity.Picture;
 import com.epicode.progettofinaleepicode.entity.Player;
 import com.epicode.progettofinaleepicode.entity.Season;
 import com.epicode.progettofinaleepicode.entity.Squadre;
 import com.epicode.progettofinaleepicode.entity.SquadreDto;
+import com.epicode.progettofinaleepicode.entity.Stadium;
 import com.epicode.progettofinaleepicode.repository.JerseyRepository;
 import com.epicode.progettofinaleepicode.repository.SquadreRepository;
+import com.epicode.progettofinaleepicode.repository.StadiumRepository;
 
 import lombok.AllArgsConstructor;
 
@@ -35,6 +38,8 @@ import lombok.AllArgsConstructor;
 public class SquadreService {
 
 	private SquadreRepository  squadreRepository;
+	
+	private StadiumRepository	stadiumRepository;
 	
 	private JerseyRepository  jerseyRepository;
 	
@@ -88,13 +93,21 @@ public class SquadreService {
 	
 	
 //	public Squadre insert(@Valid SquadreDto dto) {
-		public Squadre insert(SquadreDto dto) {
+		public Squadre insert(SquadreDto dto, Long jersery_id,Long stadium_id) {
+			
+			Jersey jersey = jerseyRepository.findById(jersery_id).orElseThrow(() -> new RuntimeException("Jersey not found"));
+			Stadium	stadium	= stadiumRepository.findById(stadium_id).orElseThrow(() -> new RuntimeException("Stadium not found"));
+			
+			
 		if(squadreRepository.existsByNome(dto.getNome())) {
 			throw new EntityExistsException("Squadra gia inserito");
 		}
 		
 		Squadre squadra = squadreProvider.getObject();
 		BeanUtils.copyProperties(dto, squadra);
+		
+		squadra.setJersey(jersey);
+		squadra.setStadium(stadium);
 		
 		return squadreRepository.save(squadra);
 		

@@ -32,6 +32,7 @@ public class SquadreDto {
 	private int puntiSubiti;
 	private int puntiFatti;
 	private int differenza;
+	private int puntiBonus;
 	private int girone;
 
 }

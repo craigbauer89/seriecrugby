@@ -44,4 +44,9 @@ public interface PartiteRepository extends JpaRepository<Partite, Long> {
 	
 	@Query(value = "SELECT * FROM partite WHERE squadra1_id = :squadra_id OR squadra2_id = :squadra_id ORDER BY date DESC", nativeQuery = true)
 	List<Partite> getAllBySquadra(@Param("squadra_id")Long squadra_id);
+	
+	@Query(value = "SELECT * FROM partite WHERE main_classifica_id = :classifica_id  ORDER BY date DESC", nativeQuery = true)
+	List<Partite> getAllByClassifica(@Param("classifica_id")Long classifica_id);
+	
+	
 }

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -25,10 +26,10 @@ import lombok.ToString;
 
 @Entity
 @Data
-@ToString(exclude = {"homeGames", "classifica", "awaygames", "players"})
+@ToString(exclude = {"homeGames", "classifica", "awaygames", "players", "participation"})
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties({"hibernateLazyInitializer","handler", "homeGames", "awaygames", "classifica", "players"})
+@JsonIgnoreProperties({"hibernateLazyInitializer","handler", "homeGames", "awaygames", "classifica", "players", "participation"})
 public class Squadre {
 	
 	
@@ -58,9 +59,14 @@ public class Squadre {
 	private int puntiSubiti =0;
 	private int puntiFatti =0;
 	private int differenza =0;
+	private int puntiBonus  =0;
 	private int girone;
 	
-	@OneToOne
+	
+	@OneToMany(mappedBy = "squadra", cascade = CascadeType.ALL)
+	private List<Participation> participation = new ArrayList<>();
+	
+	@ManyToOne(cascade = CascadeType.ALL) // or ALL
 	@JoinColumn(name = "stadium_id")
 	private Stadium stadium;
 	
@@ -78,7 +84,7 @@ public class Squadre {
 	
 	
 	//@ManyToMany(mappedBy = "squadre",fetch = FetchType.EAGER)
-	@ManyToMany(mappedBy = "squadre")
+	@ManyToMany(mappedBy = "squadre",fetch = FetchType.EAGER)
 	private List<Classifica> classifica = new ArrayList<>();
 	
 	  public void calcolaDifferenza() {
@@ -91,6 +97,12 @@ public class Squadre {
 	    private void aggiornaDifferenzaPrimaSalvataggio() {
 	        calcolaDifferenza(); // Calcola la differenza automaticamente prima del salvataggio o aggiornamento
 	    }
+	    
+	//    @Override
+	  //  public String toString() {
+	   //     return "Squadra{id=" + id + ", nome=" + nome +
+	     //          ", stadiumId=" + (stadium != null ? stadium.getId() : null) + "}";
+	    //}
 
 }
 

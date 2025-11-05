@@ -50,10 +50,16 @@ public class PartiteController {
 		return ResponseEntity.ok(partiteService.getAllBySquadra( squadra_id));
 	}
 	
-	@PostMapping("partite")
+	@GetMapping("partite/by-classifica/{classifica_id}")
+	@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+	public ResponseEntity<List<Partite>> getAllByClassifica(@PathVariable Long classifica_id) {
+		return ResponseEntity.ok(partiteService.getAllByClassifica( classifica_id));
+	}
+	
+	@PostMapping("partite/{channel_id}")
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
-	public ResponseEntity<Partite> insert(@RequestBody PartiteDto dto) {
-		return ResponseEntity.ok(partiteService.insert(dto));
+	public ResponseEntity<Partite> insert(@RequestBody PartiteDto dto, @PathVariable Long channel_id) {
+		return ResponseEntity.ok(partiteService.insert(dto,channel_id));
 	}
 
 	@GetMapping("partite/{id}")

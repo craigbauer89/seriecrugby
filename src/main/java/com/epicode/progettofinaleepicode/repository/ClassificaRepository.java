@@ -1,6 +1,7 @@
 package com.epicode.progettofinaleepicode.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -27,7 +28,13 @@ public interface ClassificaRepository extends JpaRepository<Classifica, Long> {
 		List<Classifica> findBySquadraIdAndSeasonYear(@Param("squadraId") Long squadraId,
 		                                              @Param("anno") String anno);
 
-	
+	@Query("SELECT c FROM Classifica c LEFT JOIN FETCH c.participation WHERE c.id = :id")
+	Optional<Classifica> findByIdWithPartecipition(@Param("id") Long id);
+
+	@Query("SELECT c FROM Classifica c " +
+		       "JOIN c.squadre s " +
+		       "WHERE s.id = :squadraId")
+		List<Classifica> findClassificheBySquadraId(@Param("squadraId") Long squadraId);
 
 
 

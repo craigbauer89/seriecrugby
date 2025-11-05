@@ -15,54 +15,58 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epicode.progettofinaleepicode.entity.News;
-import com.epicode.progettofinaleepicode.entity.Player;
-import com.epicode.progettofinaleepicode.entity.PlayerDTO;
-import com.epicode.progettofinaleepicode.service.ChampionshipService;
-import com.epicode.progettofinaleepicode.service.PlayerService;
+import com.epicode.progettofinaleepicode.entity.Channel;
+import com.epicode.progettofinaleepicode.entity.ChannelDto;
+import com.epicode.progettofinaleepicode.entity.LoadIds;
+import com.epicode.progettofinaleepicode.entity.LoadIdsDto;
+import com.epicode.progettofinaleepicode.service.ChannelService;
+import com.epicode.progettofinaleepicode.service.LoadIdsService;
 
 import lombok.AllArgsConstructor;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/player")
+@RequestMapping("/loadIds")
 @CrossOrigin
-public class PlayerController {
+public class LoadIdsController {
 	
-	private PlayerService  playerService;
+	private LoadIdsService  loadIdsService;
 	
 	@GetMapping
 	@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
-	public ResponseEntity<List<Player>> getAll() {
-		return ResponseEntity.ok(playerService.getAll());
+	public ResponseEntity<List<LoadIds>> getAll() {
+		return ResponseEntity.ok(loadIdsService.getAll());
 	}
 	
 	
-	@PostMapping("/{picture_id}/{squadra_id}")
+	@PostMapping
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
-	public ResponseEntity<Player> insert(@RequestBody PlayerDTO dto,@PathVariable Long picture_id,@PathVariable Long squadra_id) {
-		return ResponseEntity.ok(playerService.insert(dto,picture_id, squadra_id));
+	public ResponseEntity<LoadIds> insert(@RequestBody LoadIdsDto dto) {
+		return ResponseEntity.ok(loadIdsService.insert(dto));
 	}
 	
 	
 	@GetMapping("/{id}")
 	@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
-	public ResponseEntity<Optional<Player>> getById(@PathVariable Long id) {
-		return ResponseEntity.ok(playerService.getById(id));
+	public ResponseEntity<Optional<LoadIds>> getById(@PathVariable Long id) {
+		return ResponseEntity.ok(loadIdsService.getById(id));
 	}
 	
 	
-	@PutMapping("/{id}/{picture_id}/{squadra_id}")
+	@PutMapping("/{id}")
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
-	public ResponseEntity<Player> update(@PathVariable Long id,@RequestBody PlayerDTO dto,@PathVariable Long picture_id,@PathVariable Long squadra_id) {
-		return ResponseEntity.ok(playerService.update(id, dto,picture_id, squadra_id));
+	public ResponseEntity<LoadIds> update(@PathVariable Long id,@RequestBody LoadIdsDto dto) {
+		return ResponseEntity.ok(loadIdsService.update(id, dto));
 	}
 	
 	@DeleteMapping("/{id}")
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	public ResponseEntity<String> delete(@PathVariable Long id) {
-		playerService.cancella(id);
-		return ResponseEntity.ok("Player cancellato");
+		loadIdsService.cancella(id);
+		return ResponseEntity.ok("LoadIds cancellato");
 	}
+
+	
+	
 
 }

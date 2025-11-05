@@ -1,22 +1,16 @@
 package com.epicode.progettofinaleepicode.entity;
 
-import javax.persistence.Entity;
-
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PlayerDTO {
+public class PictureDTO {
 	
 	private String name;
-	private int tries;
-	private int punti;
-	private int gialli;
-	private int rossi;
-
 
 }

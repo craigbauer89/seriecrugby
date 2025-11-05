@@ -1,6 +1,7 @@
 package com.epicode.progettofinaleepicode.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -23,5 +24,12 @@ public interface SquadreRepository extends JpaRepository<Squadre, Long> {
 	
 	@Query("SELECT s FROM Squadre s ORDER BY s.nome ")
     List<Squadre> getAllOrderedAlpha();
+	
+	@Query("SELECT s FROM Squadre s LEFT JOIN FETCH s.participation WHERE s.id = :id")
+	Optional<Squadre> findByIdWithParticipation(@Param("id") Long id);
+	
+	@Query("SELECT s FROM Squadre s LEFT JOIN FETCH s.participation")
+	List<Squadre> findAllWithParticipation();
+
 
 }

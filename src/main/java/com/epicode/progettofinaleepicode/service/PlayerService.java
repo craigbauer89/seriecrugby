@@ -12,11 +12,15 @@ import org.springframework.stereotype.Service;
 
 import com.epicode.progettofinaleepicode.entity.Championship;
 import com.epicode.progettofinaleepicode.entity.Classifica;
+import com.epicode.progettofinaleepicode.entity.Picture;
 import com.epicode.progettofinaleepicode.entity.Player;
 import com.epicode.progettofinaleepicode.entity.PlayerDTO;
+import com.epicode.progettofinaleepicode.entity.Squadre;
 import com.epicode.progettofinaleepicode.repository.ChampionshipRepository;
+import com.epicode.progettofinaleepicode.repository.PictureRepository;
 import com.epicode.progettofinaleepicode.repository.PlayerRepository;
 import com.epicode.progettofinaleepicode.repository.SeasonRepository;
+import com.epicode.progettofinaleepicode.repository.SquadreRepository;
 
 import lombok.AllArgsConstructor;
 
@@ -25,7 +29,8 @@ import lombok.AllArgsConstructor;
 public class PlayerService {
 	
 	private PlayerRepository  playerRepository;
-	
+	private PictureRepository  pictureRepository;
+	private SquadreRepository  squadreRepository;
 	private ObjectProvider<Player> playerProvider;
 	
 
@@ -43,7 +48,12 @@ public class PlayerService {
 	}
 	
 
-	public Player insert(PlayerDTO dto) {
+	public Player insert(PlayerDTO dto, Long picture_id, Long squadra_id) {
+		
+		Picture picture = pictureRepository.findById(picture_id).orElseThrow(() -> new RuntimeException("Picture not found"));
+		Squadre squadra = squadreRepository.findById(squadra_id).orElseThrow(() -> new RuntimeException("Championship not found"));
+
+		
 		if(playerRepository.existsByName(dto.getName())) {
 			throw new EntityExistsException("Player gia inserito");
 		}
@@ -51,12 +61,27 @@ public class PlayerService {
 		Player player = playerProvider.getObject();
 		BeanUtils.copyProperties(dto, player);
 		
+		player.setPicture(picture);
+		
+		List<Player> players = squadra.getPlayers();
+		for(Player p : players) {
+			
+			   if (p.getName().equals(dto.getName())) {
+					throw new EntityExistsException("Player gia inserito per questo Season");
+				}
+			
+	
+		}
+		
+	    player.setSquadra(squadra);
+	    squadra.getPlayers().add(player);
+		
 		return playerRepository.save(player);
 		
 	}
 	
 
-		public Player update(Long id, PlayerDTO dto) {
+		public Player update(Long id, PlayerDTO dto, Long picture_id, Long squadra_id) {
 		
 		Optional<Player> playerUpdate = playerRepository.findById(id);
 		if (!playerUpdate.isPresent()) {
@@ -66,7 +91,19 @@ public class PlayerService {
 		Player player = playerUpdate.get();
 		BeanUtils.copyProperties(dto, player);
 		
-		
+		Squadre squadra = squadreRepository.findById(squadra_id)
+	                .orElseThrow(() -> new RuntimeException("Squadra non trovata"));
+
+		 	player.setSquadra(squadra);
+		    squadra.getPlayers().add(player);
+			squadreRepository.save(squadra);
+			
+		Picture picture = pictureRepository.findById(picture_id)
+            .orElseThrow(() -> new RuntimeException("Picture non trovata"));
+
+		 	player.setPicture(picture);
+
+
 		return playerRepository.save(player);
 		
 	}

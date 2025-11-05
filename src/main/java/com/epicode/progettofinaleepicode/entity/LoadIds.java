@@ -1,13 +1,10 @@
 package com.epicode.progettofinaleepicode.entity;
 
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,26 +13,15 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Player {
+public class LoadIds {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	private String name;
-	private int tries;
-	private int gialli;
-	private int rossi;
-	private int punti;
+	private Long classifica_id;
+	private Long squadra_id;
 
-	
-	@ManyToOne 
-	@JoinColumn(name="picture_id")
-	private Picture picture;
-	
-	@ManyToOne
-	@JoinColumn(name = "squadra_id", nullable = false)
-	private Squadre squadra;
 	
 
 }

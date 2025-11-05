@@ -24,5 +24,7 @@ public class PartiteDto {
 	private int meteSquadra1;
 	private int meteSquadra2;
 	private Long classifica_id;
+	private String tickets; 
+	private Boolean played;
 
 }
