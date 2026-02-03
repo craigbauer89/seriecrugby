@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties({"squadre"})
+@JsonIgnoreProperties({"squadre","partite"})
 public class Stadium {
 	
 	
@@ -45,8 +45,11 @@ public class Stadium {
 	private String name;
 	private String telefono;
 
-	 @OneToMany(mappedBy = "stadium") // no cascade needed if you're saving via Squadre
-	    private List<Squadre> squadre = new ArrayList<>();
+	@OneToMany(mappedBy = "stadium") // no cascade needed if you're saving via Squadre
+    private List<Partite> partite = new ArrayList<>();
+	
+	@OneToMany(mappedBy = "stadium") // no cascade needed if you're saving via Squadre
+    private List<Squadre> squadre = new ArrayList<>();
 	
 
 }

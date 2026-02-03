@@ -1,5 +1,7 @@
 package com.epicode.progettofinaleepicode.service;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,8 +12,10 @@ import javax.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.epicode.progettofinaleepicode.entity.Channel;
 import com.epicode.progettofinaleepicode.entity.Classifica;
@@ -22,11 +26,13 @@ import com.epicode.progettofinaleepicode.entity.PartiteDto;
 import com.epicode.progettofinaleepicode.entity.Picture;
 import com.epicode.progettofinaleepicode.entity.Squadre;
 import com.epicode.progettofinaleepicode.entity.SquadreDto;
+import com.epicode.progettofinaleepicode.entity.Stadium;
 import com.epicode.progettofinaleepicode.repository.ChannelRepository;
 import com.epicode.progettofinaleepicode.repository.ClassificaRepository;
 import com.epicode.progettofinaleepicode.repository.ParticipationRepository;
 import com.epicode.progettofinaleepicode.repository.PartiteRepository;
 import com.epicode.progettofinaleepicode.repository.SquadreRepository;
+import com.epicode.progettofinaleepicode.repository.StadiumRepository;
 
 import lombok.AllArgsConstructor;
 
@@ -39,6 +45,7 @@ import lombok.AllArgsConstructor;
 public class PartiteService {
 	
 	private ChannelRepository channelRepository;
+	private StadiumRepository	stadiumRepository;
 
 	private PartiteRepository  partiteRepository;
 	
@@ -56,6 +63,18 @@ public class PartiteService {
 	
 	public List<Partite> getAllByYear(Integer year) {
 		return partiteRepository.getAllByYear(year);
+	}
+	
+	public List<Partite> getAllBySeason(LocalDate start, LocalDate end) {
+		return partiteRepository.findBySeason(start, end);
+	}
+	
+	public List<Partite> getAllByChampFixtures(Long championship_id) {
+		return partiteRepository.getChampFixtures(championship_id);
+	}
+	
+	public List<Partite> getAllByChampResults(Long championship_id) {
+		return partiteRepository.getChampResults(championship_id);
 	}
 	
 	public List<Partite> getAllBySquadra(Long squadra_id) {
@@ -81,10 +100,26 @@ public class PartiteService {
 	}
 	
 		//	public Partite insert(@Valid PartiteDto dto) {
-	public Partite insert(PartiteDto dto, Long channel_id) {
+	public Partite insert(PartiteDto dto, Long channel_id,Long stadium_id) {
 		//		if(partiteRepository.existsByDate(dto.getDate())) {
 		//			throw new EntityExistsException("Partita gia inserito");
 		//		}
+		
+		Stadium	stadium	= stadiumRepository.findById(stadium_id).orElseThrow(() -> new RuntimeException("Stadium not found"));
+
+		LocalDate today = LocalDate.now();
+
+		if (dto.getDate().isAfter(today)) {
+		    
+			 if (dto.getMeteSquadra1()> 0 || dto.getMeteSquadra2()> 0 || dto.getPuntisquadra1() > 0 || dto.getPuntisquadra1() > 0 ) {
+			        throw new ResponseStatusException(
+			            HttpStatus.BAD_REQUEST, 
+			            "Partite nel futuro nel possono avere punti"
+			        );
+			    }
+			
+		}
+		
 		
 		Partite partita = partiteProvider.getObject();
 		BeanUtils.copyProperties(dto, partita);
@@ -95,6 +130,12 @@ public class PartiteService {
 	    Squadre squadra2 = squadreRepository.findById(dto.getSquadra2_id())
                 .orElseThrow(() -> new RuntimeException("Squadra 2 non trovata"));
 	    
+	    if (squadra1.getId().equals(squadra2.getId())) {
+	        throw new ResponseStatusException(
+	            HttpStatus.BAD_REQUEST, 
+	            "Squadra 1 e Squadra 2 non possono essere uguali"
+	        );
+	    }
 	    Classifica classifica = classificaRepository.findById(dto.getClassifica_id())
                 .orElseThrow(() -> new RuntimeException("Classifica non trovata"));
 
@@ -106,7 +147,8 @@ public class PartiteService {
 
 		partita.setChannel(channel);
 	    
-	    partita.setClassifica(classifica);	 
+	    partita.setClassifica(classifica);	
+	    partita.setStadium(stadium);
 	    
 	    
 	    squadra1.getHomeGames().add(partita);
@@ -133,25 +175,45 @@ public class PartiteService {
 	
 		//	public Partite update(Long id, @Valid PartiteDto dto) {
 	@SuppressWarnings("null")
-	public Partite update(Long id, PartiteDto dto) {
+	public Partite update(Long id, PartiteDto dto,Long channel_id,Long stadium_id) {
+		
+		
+		Channel channel = channelRepository.findById(channel_id)
+	            .orElseThrow(() -> new RuntimeException("Channel non trovata"));
+		
+		Stadium	stadium	= stadiumRepository.findById(stadium_id).orElseThrow(() -> new RuntimeException("Stadium not found"));
+
+		
 		Optional<Partite> partitaUpdate = partiteRepository.findById(id);
 		if (!partitaUpdate.isPresent()) {
 			throw new EntityNotFoundException();	
 		}
 		
 		Classifica classifica = classificaRepository.findById(dto.getClassifica_id())
-                .orElseThrow(() -> new RuntimeException("Classifica non trovata"));
+                .orElseThrow(() -> new RuntimeException("Classifica non trovata: id=" + dto.getClassifica_id()));
 		
+		// check if the game being modified is a game in the past, if yes reset it
 		if (partitaUpdate.get().getPlayed()) {
 			resetSquadra(id,classifica.getId());
+			
+			// check if the modified game is a game in the past, if yes, update it
+			if (dto.getPlayed()) {
+				updateSquadra(dto,classifica.getId());
+			
+			}
+		}
+		//if future game, 
+
+		else {
+			// check if the modified game is a game in the past, if yes, update it
+						if (dto.getPlayed()) {
+							updateSquadra(dto,classifica.getId());
+						
+						}
 		}
 		
 		
-				if (dto.getPlayed()) {
-					resetSquadra(id,classifica.getId());
-					updateSquadra(dto,classifica.getId());
-				
-				}
+		
 				
 		
 		Partite partita = partitaUpdate.get();
@@ -162,6 +224,10 @@ public class PartiteService {
 	                .orElseThrow(() -> new RuntimeException("Squadra 1 non trovata"));
 		    Squadre squadra2 = squadreRepository.findById(dto.getSquadra2_id())
 	                .orElseThrow(() -> new RuntimeException("Squadra 2 non trovata"));
+		    
+		    
+		    partita.setChannel(channel);
+		    partita.setStadium(stadium);
 
 		    partita.setSquadra1(squadra1);
 		    partita.setSquadra2(squadra2);
@@ -186,7 +252,11 @@ public class PartiteService {
 		
 		Long classifica_id = partita.getClassifica_id();
 		
-		resetSquadra(id,classifica_id);
+		// check if the game being modified is a game in the past, if yes reset it
+		if (partita.getPlayed()) {
+			resetSquadra(id,classifica_id);
+			
+		}
 		
 
 		   Squadre squadra1 = squadreRepository.findById(partita.getSquadra1().getId())
@@ -342,22 +412,26 @@ public class PartiteService {
 		if (result >= -7 && result < 0)	{
 			
 			squadra1.setPunti(squadra1.getPunti()-1);
+			squadra1Participation.setPunti(squadra1Participation.getPunti()-1);
 		
 		}
 		
 		if (result <= 7 && result > 0)	{
 			
 			squadra2.setPunti(squadra2.getPunti()-1);
+			squadra2Participation.setPunti(squadra2Participation.getPunti()-1);
 	
 		}
 		
 		if (partita.getMeteSquadra1()>= 4) { 
 			squadra1.setPunti(squadra1.getPunti()-1);
+			squadra1Participation.setPunti(squadra1Participation.getPunti()-1);
 			
 		}
 		
 		if (partita.getMeteSquadra2()>= 4) { 
 			squadra2.setPunti(squadra2.getPunti()-1);
+			squadra2Participation.setPunti(squadra2Participation.getPunti()-1);
 			
 		}
 		

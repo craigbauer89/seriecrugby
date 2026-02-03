@@ -158,6 +158,12 @@ public class UtenteRunner implements ApplicationRunner {
 		for (String item : seasonslist) {
 			Season season = new Season();
 			season.setYear(item);
+			LocalDate startdate = LocalDate.parse(item+"-01-01");
+			LocalDate enddate = LocalDate.parse(item+"-12-01");
+
+	        System.out.println("HEELLEOOOOOOOOOOOOOOOOO"+ startdate);
+			season.setStartDate(startdate);	 //	
+			season.setEndDate(enddate);
 			seasons.add(season);
 			
 		
@@ -554,8 +560,8 @@ public class UtenteRunner implements ApplicationRunner {
 			System.out.println(s);
 			playerRepository.save(s);
 			}
-		
-		
+		LocalDate startdate = LocalDate.parse("2022-01-01");
+		 System.out.println("HEELLEOOOOOOOOOOOOOOOOO"+ startdate);
 		
 		Long id = (long) 1;
 		//java.util.Optional<Squadre> testSquadra = squadraService.getById(id);
@@ -735,6 +741,7 @@ public class UtenteRunner implements ApplicationRunner {
 			BigDecimal latitude = new BigDecimal(metadata[1]);
 			BigDecimal longitude =  new BigDecimal(metadata[2]);
 			 String nome  =  metadata[3];
+			 String shortNome  =  metadata[20];
 			 String allenatore = metadata[4];
 			 String indirizzo  = metadata[5];
 			 String sito  =  metadata[6];
@@ -775,6 +782,7 @@ public class UtenteRunner implements ApplicationRunner {
 			squadre.setPuntiSubiti(puntiSubiti);
 			squadre.setPunti(punti);
 			squadre.setGirone(girone);	
+			squadre.setShortName(shortNome);
 		
 		return squadre;
 		

@@ -40,6 +40,24 @@ public interface PartiteRepository extends JpaRepository<Partite, Long> {
 
 	@Query(value = "SELECT * FROM partite WHERE EXTRACT(YEAR FROM date) = :year", nativeQuery = true)
 	List<Partite> getAllByYear(@Param("year")Integer year);
+	
+
+	@Query(value = "SELECT * FROM partite p WHERE p.date >= :start AND p.date <= :end", nativeQuery = true)
+	List<Partite> findBySeason(@Param("start") LocalDate start,
+	                           @Param("end") LocalDate end);
+	
+	@Query(value = "SELECT * FROM partite WHERE date >= CURRENT_DATE", nativeQuery = true)
+	List<Partite> getFixtures();
+	
+	@Query(value = "SELECT * FROM partite WHERE date <= CURRENT_DATE", nativeQuery = true)
+	List<Partite> getResults();
+	
+	
+	@Query(value = "SELECT p.* FROM public.partite JOIN public.classifica cl ON cl.id = p.main_classifica_id JOIN public.championship c ON c.id = cl.championship_id WHERE p.date >= CURRENT_DATE AND c.id = :championship_id", nativeQuery = true)
+	List<Partite> getChampFixtures(@Param("championship_id")Long championship_id);
+	
+	@Query(value = "SELECT p.* FROM public.partite JOIN public.classifica cl ON cl.id = p.main_classifica_id JOIN public.championship c ON c.id = cl.championship_id WHERE p.date <= CURRENT_DATE AND c.id = :championship_id", nativeQuery = true)
+	List<Partite> getChampResults(@Param("championship_id")Long championship_id);
 
 	
 	@Query(value = "SELECT * FROM partite WHERE squadra1_id = :squadra_id OR squadra2_id = :squadra_id ORDER BY date DESC", nativeQuery = true)

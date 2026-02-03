@@ -1,5 +1,6 @@
 package com.epicode.progettofinaleepicode.entity;
 
+import java.time.LocalDate;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -27,6 +28,8 @@ public class Season {
 	private Long id;
 	
 	private String year;
+	private LocalDate startDate;
+	private  LocalDate  endDate;
 	
 	
 	@OneToMany(mappedBy = "season",cascade = CascadeType.ALL,fetch = FetchType.EAGER)

@@ -1,8 +1,11 @@
 package com.epicode.progettofinaleepicode.controller;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -43,6 +46,31 @@ public class PartiteController {
 	public ResponseEntity<List<Partite>> getAllByYear(@PathVariable Integer year) {
 		return ResponseEntity.ok(partiteService.getAllByYear(year));
 	}
+
+@GetMapping("partite/by-season/{start}/{end}")
+	public ResponseEntity<List<Partite>> getAllBySeason(
+	        @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+	        @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+	    
+	    LocalDateTime startDateTime = start.atStartOfDay();
+	    LocalDateTime endDateTime = end.atTime(23, 59, 59);
+
+	    return ResponseEntity.ok(partiteService.getAllBySeason(start, end));
+	}
+
+
+	
+	@GetMapping("partite/by-results/{championship_id}")
+	@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+	public ResponseEntity<List<Partite>> getAllByChampResults(@PathVariable Long championship_id) {
+		return ResponseEntity.ok(partiteService.getAllByChampResults(championship_id));
+	}
+	
+	@GetMapping("partite/by-fixtures/{championship_id}")
+	@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+	public ResponseEntity<List<Partite>> getAllByChamFixtures(@PathVariable Long championship_id) {
+		return ResponseEntity.ok(partiteService.getAllByChampFixtures(championship_id));
+	}
 	
 	@GetMapping("partite/by-squadra/{squadra_id}")
 	@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
@@ -56,10 +84,10 @@ public class PartiteController {
 		return ResponseEntity.ok(partiteService.getAllByClassifica( classifica_id));
 	}
 	
-	@PostMapping("partite/{channel_id}")
+	@PostMapping("partite/{channel_id}/{staidum_id}")
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
-	public ResponseEntity<Partite> insert(@RequestBody PartiteDto dto, @PathVariable Long channel_id) {
-		return ResponseEntity.ok(partiteService.insert(dto,channel_id));
+	public ResponseEntity<Partite> insert(@RequestBody PartiteDto dto, @PathVariable Long channel_id, @PathVariable Long staidum_id) {
+		return ResponseEntity.ok(partiteService.insert(dto,channel_id,staidum_id));
 	}
 
 	@GetMapping("partite/{id}")
@@ -67,10 +95,10 @@ public class PartiteController {
 		return ResponseEntity.ok(partiteService.getById(id));
 	}
 	
-	@PutMapping("partite/{id}")
+	@PutMapping("partite/{id}/{channel_id}/{staidum_id}")
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
-	public ResponseEntity<Partite> update(@PathVariable Long id,@RequestBody PartiteDto dto) {
-		return ResponseEntity.ok(partiteService.update(id, dto));
+	public ResponseEntity<Partite> update(@PathVariable Long id,@RequestBody PartiteDto dto, @PathVariable Long channel_id, @PathVariable Long staidum_id) {
+		return ResponseEntity.ok(partiteService.update(id, dto,channel_id,staidum_id));
 	}
 	
 	@DeleteMapping("partite/{id}")

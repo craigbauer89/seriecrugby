@@ -18,6 +18,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -48,6 +49,7 @@ public class Squadre {
 	private BigDecimal latitude;
 	private BigDecimal longitude;
 	private String nome;
+	private String shortName;
 	private String telefono;
 	private int punti  =0;
 	private int vittorie =0;

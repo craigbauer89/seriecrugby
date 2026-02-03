@@ -26,5 +26,6 @@ public class PartiteDto {
 	private Long classifica_id;
 	private String tickets; 
 	private Boolean played;
+	private String time;
 
 }
